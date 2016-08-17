@@ -1,0 +1,6 @@
+image: "iras/php7-phalcon-test"
+
+test:
+  script:
+    - composer install
+    - vendor/bin/phpunit

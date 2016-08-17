@@ -4,5 +4,8 @@
     "require-dev": {
         "phpunit/phpunit": "5.5.*",
         "mockery/mockery": "0.9.*"
+    },
+    "autoload": {
+        "classmap": ["src"]
     }
 }
