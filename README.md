@@ -86,8 +86,8 @@ function someStaticFunction() {
 }
 ```
 
-The problem before: you can not mock the call to `MyApp::getDatabaseConnection()`. You can still not mock the call to 
-`DI::database()` or `DI::get('database')`. But you can set the dependency to return a mock object:
+The problem before: you can not mock the static function `MyApp::getDatabaseConnection()`. You also can not mock the 
+static function `DI::database()` or `DI::get('database')`. But you can set the dependency to return a mock object:
 
 ```php
 <?php
