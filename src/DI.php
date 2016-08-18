@@ -1,5 +1,7 @@
 <?php
 
+namespace DependencyInjector;
+
 /**
  * Class DependencyInjector
  *
@@ -13,15 +15,15 @@
  * DependencyInjector::set('world', function() { return 'world'; });
  * echo DependencyInjector:get('hello') . " " . DependencyInjector:.get('world') . "!\n";
  */
-class DependencyInjector {
+class DI {
 
     /**
      * Get a previously defined dependency identified by $name.
      *
      * @param string $name
-     * @throws DependencyInjectorException
+     * @throws Exception
      */
     public static function get($name) {
-        throw new DependencyInjectorException("Unknown dependency '" . $name . "'");
+        throw new Exception("Unknown dependency '" . $name . "'");
     }
 }

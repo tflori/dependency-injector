@@ -1,26 +1,34 @@
 {
-    "name": "tflori/dependency-injector",
-    "type": "library",
-    "keywords": ["di", "dependency injection", "dependency injector", "dependency", "dependencies"],
-    "description": "Easy and lightweight dependency injector",
-    "licence": "MIT",
-    "authors": [
-        {
-            "name": "Thomas Flori",
-            "email": "thflori@gmail.com",
-            "role": "Developer"
-        }
-    ],
-    "scripts": {
-        "test": "phpunit",
-        "test-wcc": "phpunit --coverage-html coverage"
-    },
-    "version": "1.0.0-alpha",
-    "require-dev": {
-        "phpunit/phpunit": "5.5.*",
-        "mockery/mockery": "0.9.*"
-    },
-    "autoload": {
-        "classmap": ["src"]
+  "name": "tflori/dependency-injector",
+  "type": "library",
+  "keywords": [
+    "di",
+    "dependency injection",
+    "dependency injector",
+    "dependency",
+    "dependencies"
+  ],
+  "description": "Easy and lightweight dependency injector",
+  "licence": "MIT",
+  "authors": [
+    {
+      "name": "Thomas Flori",
+      "email": "thflori@gmail.com",
+      "role": "Developer"
     }
+  ],
+  "scripts": {
+    "test": "phpunit",
+    "test-wcc": "phpunit --coverage-html coverage"
+  },
+  "version": "1.0.0-alpha",
+  "require-dev": {
+    "phpunit/phpunit": "5.5.*",
+    "mockery/mockery": "0.9.*"
+  },
+  "autoload": {
+    "psr-4": {
+      "DependencyInjector\\": "src/"
+    }
+  }
 }

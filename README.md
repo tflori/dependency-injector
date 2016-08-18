@@ -21,6 +21,8 @@ a class itself.
 ```php
 <?php
 
+use DependencyInjector\DI;
+
 class Config {
     private static $_instance;
     
@@ -45,8 +47,6 @@ class Config {
     }
 }
 
-class_alias('DependencyInjector', 'DI'); // create an alias for easier access
-
 DI::set('config', function() { return Config::getInstance(); });
 
 function someStaticFunction() {
@@ -70,6 +70,8 @@ function someStaticFunction() {
 ### The database connection
 ```php
 <?php
+
+use DependencyInjector\DI;
 
 DI::set('database', function() {
     $dbConfig = DI::config()->database;
@@ -99,6 +101,8 @@ static function `DI::database()` or `DI::get('database')`. But you can set the d
 
 ```php
 <?php
+
+use DependencyInjector\DI;
 
 class ApplicationTest extends PHPUnit_Framework_TestCase {
     public function testSomeStaticFunction() {
