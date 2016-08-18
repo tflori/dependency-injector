@@ -1,6 +1,14 @@
 # Dependency Injector
 
 A simple and lightweight dependency injector. You will need nothing more to tests your old legacy code.
+
+Did you ever wondered how complicated it could be to write a dependency injector that works? In fact it is very easy
+and you don't need a tons of classes laying around and learn a dozens of new fancy words. 
+
+It is just a storage of functions and values for a specific key. Store your function to create an instance and it get
+executed the first time you need this instance.
+
+Sounds to easy? What about dependencies? Check the examples. It is nothing more needed than this.
  
 ## What is a dependency
 

@@ -1,6 +1,9 @@
 image: "iras/php7-phalcon-test"
 
 test:
+  artifacts:
+    path:
+    - coverage/
   script:
     - composer install
-    - vendor/bin/phpunit
+    - composer test-wcc
