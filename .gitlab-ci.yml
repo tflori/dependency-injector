@@ -2,7 +2,7 @@ image: "iras/php7-phalcon-test"
 
 test:
   artifacts:
-    path:
+    paths:
     - coverage/
   script:
     - composer install
