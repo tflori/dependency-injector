@@ -16,14 +16,90 @@ namespace DependencyInjector;
  * echo DependencyInjector:get('hello') . " " . DependencyInjector:.get('world') . "!\n";
  */
 class DI {
+    protected static $_instances = [];
+    protected static $_dependencies = [];
 
     /**
      * Get a previously defined dependency identified by $name.
      *
      * @param string $name
      * @throws Exception
+     * @return mixed
      */
     public static function get($name) {
+
+        if (isset(self::$_instances[$name])) {
+
+            return self::$_instances[$name];
+
+        } elseif (isset(self::$_dependencies[$name])) {
+
+            if (self::$_dependencies[$name]['singleton']) {
+
+                self::$_instances[$name] = call_user_func(self::$_dependencies[$name]['getter']);
+                return self::$_instances[$name];
+
+            }
+
+            return call_user_func(self::$_dependencies[$name]['getter']);
+
+        } elseif (class_exists($name)) {
+
+            return $name;
+
+        }
+
         throw new Exception("Unknown dependency '" . $name . "'");
     }
+
+    /**
+     * Alias for DI::get($name). Example:
+     * DI::get('same') === DI::same()
+     *
+     * @param string $name
+     * @param array  $arguments
+     * @return mixed
+     */
+    public static function __callStatic($name, $arguments) {
+        return self::get($name);
+    }
+
+    /**
+     * Define a dependency.
+     *
+     * @param string $name
+     * @param mixed  $getter
+     * @param bool   $singleton
+     * @return void
+     */
+    public static function set($name, $getter, $singleton = true) {
+        if (is_object($getter) && $getter instanceof \Closure && is_callable($getter)) {
+
+            if (isset(self::$_instances[$name])) {
+                unset(self::$_instances[$name]);
+            }
+
+            self::$_dependencies[$name] = [
+                'singleton' => $singleton,
+                'getter' => $getter
+            ];
+
+        } else {
+
+            self::$_instances[$name] = $getter;
+
+        }
+    }
+
+    /**
+     * Resets the DependencyInjector
+     *
+     * @return void
+     */
+    public static function reset() {
+        self::$_instances = [];
+        self::$_dependencies = [];
+    }
+
+    private function __construct() {}
 }
