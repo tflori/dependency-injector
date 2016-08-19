@@ -1,5 +1,7 @@
 {
   "name": "tflori/dependency-injector",
+  "version": "1.0.0-alpha",
+  "description": "Easy and lightweight dependency injector",
   "type": "library",
   "keywords": [
     "di",
@@ -8,7 +10,6 @@
     "dependency",
     "dependencies"
   ],
-  "description": "Easy and lightweight dependency injector",
   "licence": "MIT",
   "authors": [
     {
@@ -21,7 +22,9 @@
     "test": "phpunit",
     "test-wcc": "phpunit --coverage-html coverage"
   },
-  "version": "1.0.0-alpha",
+  "require": {
+    "php": "^5.4.0 || ^7.0"
+  },
   "require-dev": {
     "phpunit/phpunit": "5.5.*",
     "mockery/mockery": "0.9.*"

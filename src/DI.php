@@ -61,7 +61,9 @@ class DI {
      * @return mixed
      */
     public static function __callStatic($name, $arguments) {
+
         return self::get($name);
+
     }
 
     /**
@@ -73,6 +75,7 @@ class DI {
      * @return void
      */
     public static function set($name, $getter, $singleton = true) {
+
         if (is_object($getter) && $getter instanceof \Closure && is_callable($getter)) {
 
             if (isset(self::$_instances[$name])) {
@@ -97,8 +100,10 @@ class DI {
      * @return void
      */
     public static function reset() {
+
         self::$_instances = [];
         self::$_dependencies = [];
+
     }
 
     private function __construct() {}
