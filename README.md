@@ -15,7 +15,17 @@ Sounds to easy? What about dependencies? Check the examples. It is nothing more 
 Something that your script needs to work correct. For example an instance of `Calculator` or `Config`. Or even
 a class itself.
 
+## Tests
+
+The problem is always to test things and to provide mocks for your tests. This DependencyInjector can solve this
+problems. It is possible to call your `getInstance()` method four your singleton like this:
+`(DI::get(MySingleton::class))::getInstance()` - now you can provide a mock object under this key.
+
 ## Examples
+
+For examples with tests have a look at the source: tests/examples.
+
+Here are some small examples for basic usage.
 
 ### The `Config`
 ```php
