@@ -119,7 +119,7 @@ class ApplicationTest extends PHPUnit_Framework_TestCase {
         $mock = $this->getMock(mysqli::class);
         $mock->expects($this->once())->method('query')
             ->with('SELECT * FROM table');
-        DI::set('database', function() use($mock) { return $mock; });
+        DI::set('database', $mock);
             
         someStaticFunction();
     }
