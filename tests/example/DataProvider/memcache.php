@@ -19,3 +19,8 @@ DI::set('memcache', function() {
     $memcache->addServer('localhost', 11211);
     return $memcache;
 });
+
+// keep the function for your not refactored lagacy code:
+function getMemcache() {
+    return DI::get('memcache');
+}
