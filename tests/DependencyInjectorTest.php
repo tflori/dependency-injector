@@ -140,8 +140,18 @@ class DependencyInjectorTest extends TestCase {
      */
     public function testGet_returnsClassName() {
         $result = DI::get(__CLASS__);
+    }
 
-        $this->assertSame(__CLASS__, $result);
+    /**
+     * Test that a class name has to be case sensitive.
+     */
+    public function testGet_classNameIsCaseSensitive() {
+        $this->expectException(DependencyInjector\Exception::class);
+        $this->expectExceptionMessage("Unknown dependency '" . strtolower(__CLASS__) . "'");
+
+        $result = DI::get(strtolower(__CLASS__));
+
+        $this->assertNotSame(strtolower(__CLASS__), $result);
     }
 
     /**

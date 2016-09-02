@@ -45,7 +45,14 @@ class DI {
 
         } elseif (class_exists($name)) {
 
-            return $name;
+            $reflection = new \ReflectionClass($name);
+
+            if ($reflection->getName() === $name) {
+
+                self::$_instances[$name] = $name;
+                return self::$_instances[$name];
+
+            }
 
         }
 
