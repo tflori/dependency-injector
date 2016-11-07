@@ -1,5 +1,10 @@
 # Dependency Injector
 
+[![build status](https://gitlab.w00tserver.org:617/tflori/dependency-injector/badges/master/build.svg)](https://gitlab.w00tserver.org:617/tflori/dependency-injector/commits/master)
+[![Latest Stable Version](https://poser.pugx.org/tflori/dependency-injector/v/stable)](https://packagist.org/packages/tflori/dependency-injector)
+[![Total Downloads](https://poser.pugx.org/tflori/dependency-injector/downloads)](https://packagist.org/packages/tflori/dependency-injector)
+[![License](https://poser.pugx.org/tflori/dependency-injector/license)](https://packagist.org/packages/tflori/dependency-injector)
+
 A simple and lightweight dependency injector. You will need nothing more to tests your old legacy code.
 
 Did you ever wondered how complicated it could be to write a dependency injector that works? In fact it is very easy
