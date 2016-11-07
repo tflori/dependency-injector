@@ -70,7 +70,6 @@ class DI {
     public static function __callStatic($name, $arguments) {
 
         return self::get($name);
-
     }
 
     /**
@@ -110,7 +109,33 @@ class DI {
 
         self::$_instances = [];
         self::$_dependencies = [];
+    }
 
+    /**
+     * Removes dependency $name
+     *
+     * @param string $name
+     */
+    public static function unset($name) {
+
+        if (isset(self::$_instances[$name])) {
+            unset(self::$_instances[$name]);
+        }
+
+        if (isset(self::$_dependencies[$name])) {
+            unset(self::$_dependencies[$name]);
+        }
+    }
+
+    /**
+     * Checks if dependency $name is defined
+     *
+     * @param string $name
+     * @return bool
+     */
+    public static function has($name) {
+
+        return isset(self::$_instances[$name]) || isset(self::$_dependencies[$name]);
     }
 
     private function __construct() {}

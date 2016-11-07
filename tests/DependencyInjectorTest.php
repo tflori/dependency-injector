@@ -14,7 +14,7 @@ class DependencyInjectorTest extends TestCase {
      * Test that the setup works - the class should exist
      */
     public function testSetUp() {
-        $this->assertTrue(class_exists('DependencyInjector\DI'));
+        self::assertTrue(class_exists('DependencyInjector\DI'));
     }
 
     /**
@@ -24,7 +24,7 @@ class DependencyInjectorTest extends TestCase {
         $refDI = new ReflectionClass(DI::class);
         $refConstruct = $refDI->getMethod('__construct');
 
-        $this->assertTrue($refConstruct->isPrivate());
+        self::assertTrue($refConstruct->isPrivate());
     }
 
     /**
@@ -45,7 +45,7 @@ class DependencyInjectorTest extends TestCase {
 
         DI::set('something', $something);
 
-        $this->assertEquals($something, DI::get('something'));
+        self::assertEquals($something, DI::get('something'));
     }
 
     /**
@@ -58,7 +58,7 @@ class DependencyInjectorTest extends TestCase {
 
         $result = DI::get('anonymous');
 
-        $this->assertSame('fooBar', $result);
+        self::assertSame('fooBar', $result);
     }
 
     /**
@@ -71,7 +71,7 @@ class DependencyInjectorTest extends TestCase {
             $calls = $calls + 1;
         });
 
-        $this->assertSame(0, $calls);
+        self::assertSame(0, $calls);
     }
 
     /**
@@ -87,7 +87,7 @@ class DependencyInjectorTest extends TestCase {
         DI::get('callOnce');
         DI::get('callOnce');
 
-        $this->assertSame(1, $calls);
+        self::assertSame(1, $calls);
     }
 
     /**
@@ -103,7 +103,7 @@ class DependencyInjectorTest extends TestCase {
         DI::get('callTwice');
         DI::get('callTwice');
 
-        $this->assertSame(2, $calls);
+        self::assertSame(2, $calls);
     }
 
     /**
@@ -120,7 +120,7 @@ class DependencyInjectorTest extends TestCase {
         });
         $result2 = DI::get('microtime');
 
-        $this->assertNotSame($result1, $result2);
+        self::assertNotSame($result1, $result2);
     }
 
     /**
@@ -132,7 +132,7 @@ class DependencyInjectorTest extends TestCase {
         /** @noinspection PhpUndefinedMethodInspection */
         $result = DI::magicCall();
 
-        $this->assertTrue($result);
+        self::assertTrue($result);
     }
 
     /**
@@ -151,7 +151,7 @@ class DependencyInjectorTest extends TestCase {
 
         $result = DI::get(strtolower(__CLASS__));
 
-        $this->assertNotSame(strtolower(__CLASS__), $result);
+        self::assertNotSame(strtolower(__CLASS__), $result);
     }
 
     /**
@@ -162,7 +162,7 @@ class DependencyInjectorTest extends TestCase {
 
         $result = DI::get(__CLASS__);
 
-        $this->assertSame('FooBar', $result);
+        self::assertSame('FooBar', $result);
     }
 
     /**
@@ -176,6 +176,20 @@ class DependencyInjectorTest extends TestCase {
 
         DI::reset();
 
-        $this->assertSame(__CLASS__, DI::get(__CLASS__));
+        self::assertSame(__CLASS__, DI::get(__CLASS__));
+    }
+
+    public function testHas() {
+        DI::set('foo', 'bar');
+
+        self::assertTrue(DI::has('foo'));
+    }
+
+    public function testUnset() {
+        DI::set('foo', 'bar');
+
+        DI::unset('foo');
+
+        self::assertFalse(DI::has('foo'));
     }
 }
