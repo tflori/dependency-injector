@@ -186,7 +186,10 @@ class DependencyInjectorTest extends TestCase {
     }
 
     public function testUnset() {
-        DI::set('foo', 'bar');
+        DI::set('foo', function() {
+            return 'bar';
+        });
+        DI::get('foo');
 
         DI::unset('foo');
 
