@@ -3,6 +3,7 @@
   "version": "1.2.0",
   "description": "Easy and lightweight dependency injector",
   "type": "library",
+  "readme": "README.md",
   "keywords": [
     "di",
     "dependency injection",
