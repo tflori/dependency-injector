@@ -1,4 +1,4 @@
-image: "iras/php7-phalcon-test"
+image: "iras/php7-alpine"
 
 test:
   artifacts:
