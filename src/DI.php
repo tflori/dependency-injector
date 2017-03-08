@@ -15,9 +15,10 @@ namespace DependencyInjector;
  * DependencyInjector::set('world', function() { return 'world'; });
  * echo DependencyInjector:get('hello') . " " . DependencyInjector:.get('world') . "!\n";
  */
-class DI {
-    protected static $_instances = [];
-    protected static $_dependencies = [];
+class DI
+{
+    protected static $instances     = [];
+    protected static $dependencies = [];
 
     /**
      * Get a previously defined dependency identified by $name.
@@ -26,34 +27,25 @@ class DI {
      * @throws Exception
      * @return mixed
      */
-    public static function get($name) {
-
-        if (isset(self::$_instances[$name])) {
-
-            return self::$_instances[$name];
-
-        } elseif (isset(self::$_dependencies[$name])) {
-
-            if (self::$_dependencies[$name]['singleton']) {
-
-                self::$_instances[$name] = call_user_func(self::$_dependencies[$name]['getter']);
-                return self::$_instances[$name];
-
+    public static function get($name)
+    {
+        if (isset(self::$instances[$name])) {
+            return self::$instances[$name];
+        } elseif (isset(self::$dependencies[$name])) {
+            if (self::$dependencies[$name]['singleton']) {
+                self::$instances[$name] = call_user_func(self::$dependencies[$name]['getter']);
+                return self::$instances[$name];
             }
 
-            return call_user_func(self::$_dependencies[$name]['getter']);
+            return call_user_func(self::$dependencies[$name]['getter']);
 
         } elseif (class_exists($name)) {
-
             $reflection = new \ReflectionClass($name);
 
             if ($reflection->getName() === $name) {
-
-                self::$_instances[$name] = $name;
-                return self::$_instances[$name];
-
+                self::$instances[$name] = $name;
+                return self::$instances[$name];
             }
-
         }
 
         throw new Exception("Unknown dependency '" . $name . "'");
@@ -67,7 +59,8 @@ class DI {
      * @param array  $arguments
      * @return mixed
      */
-    public static function __callStatic($name, $arguments) {
+    public static function __callStatic($name, $arguments)
+    {
 
         return self::get($name);
     }
@@ -76,27 +69,25 @@ class DI {
      * Define a dependency.
      *
      * @param string $name
-     * @param mixed  $getter
-     * @param bool   $singleton
+     * @param mixed  $getter    The callable getter for this dependency or the value
+     * @param bool   $singleton Save result from $getter for later request
+     * @param bool   $isValue   Store $getter as value
      * @return void
      */
-    public static function set($name, $getter, $singleton = true) {
+    public static function set($name, $getter, $singleton = true, $isValue = false)
+    {
 
-        if (is_callable($getter)) {
-
-            if (isset(self::$_instances[$name])) {
-                unset(self::$_instances[$name]);
+        if (!$isValue && is_callable($getter)) {
+            if (isset(self::$instances[$name])) {
+                unset(self::$instances[$name]);
             }
 
-            self::$_dependencies[$name] = [
+            self::$dependencies[$name] = [
                 'singleton' => $singleton,
-                'getter' => $getter
+                'getter'    => $getter
             ];
-
         } else {
-
-            self::$_instances[$name] = $getter;
-
+            self::$instances[$name] = $getter;
         }
     }
 
@@ -105,10 +96,11 @@ class DI {
      *
      * @return void
      */
-    public static function reset() {
+    public static function reset()
+    {
 
-        self::$_instances = [];
-        self::$_dependencies = [];
+        self::$instances     = [];
+        self::$dependencies = [];
     }
 
     /**
@@ -116,14 +108,15 @@ class DI {
      *
      * @param string $name
      */
-    public static function unset($name) {
+    public static function unset($name)
+    {
 
-        if (isset(self::$_instances[$name])) {
-            unset(self::$_instances[$name]);
+        if (isset(self::$instances[$name])) {
+            unset(self::$instances[$name]);
         }
 
-        if (isset(self::$_dependencies[$name])) {
-            unset(self::$_dependencies[$name]);
+        if (isset(self::$dependencies[$name])) {
+            unset(self::$dependencies[$name]);
         }
     }
 
@@ -133,10 +126,13 @@ class DI {
      * @param string $name
      * @return bool
      */
-    public static function has($name) {
+    public static function has($name)
+    {
 
-        return isset(self::$_instances[$name]) || isset(self::$_dependencies[$name]);
+        return isset(self::$instances[$name]) || isset(self::$dependencies[$name]);
     }
 
-    private function __construct() {}
+    private function __construct()
+    {
+    }
 }

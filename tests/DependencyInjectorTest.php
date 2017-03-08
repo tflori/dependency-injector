@@ -82,6 +82,16 @@ class DependencyInjectorTest extends TestCase
         return 'fooBar';
     }
 
+    public function testSetStoresValue()
+    {
+        $something = [$this, 'getDependencyExample'];
+        DI::set('array', $something, false, true);
+
+        $result = DI::get('array');
+
+        self::assertSame($something, $result);
+    }
+
     /**
      * Test that the function got not executed before get.
      */
