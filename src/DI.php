@@ -82,7 +82,7 @@ class DI {
      */
     public static function set($name, $getter, $singleton = true) {
 
-        if (is_object($getter) && $getter instanceof \Closure && is_callable($getter)) {
+        if (is_callable($getter)) {
 
             if (isset(self::$_instances[$name])) {
                 unset(self::$_instances[$name]);
