@@ -108,7 +108,7 @@ class DI
      *
      * @param string $name
      */
-    public static function unset($name)
+    public static function delete($name)
     {
 
         if (isset(self::$instances[$name])) {

@@ -226,14 +226,14 @@ class DependencyInjectorTest extends TestCase
         self::assertTrue(DI::has('foo'));
     }
 
-    public function testUnset()
+    public function testDelete()
     {
         DI::set('foo', function () {
             return 'bar';
         });
         DI::get('foo');
 
-        DI::unset('foo');
+        DI::delete('foo');
 
         self::assertFalse(DI::has('foo'));
     }
