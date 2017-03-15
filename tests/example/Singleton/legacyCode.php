@@ -15,7 +15,8 @@ function getTheSingletonResult() {
     // $singleton = MySingleton::getInstance();
 
     /** @var $singleton MySingleton */
-    $singleton = (DI::get(MySingleton::class))::getInstance();
+    $class = DI::get('MySingleton');
+    $singleton = $class::getInstance();
 
     return $singleton->getResult();
 }
