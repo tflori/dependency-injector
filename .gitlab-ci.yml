@@ -11,12 +11,12 @@ test:php-7:
     - coverage/
   script:
     - wget http://getcomposer.org/installer -O - | php -- --install-dir=/usr/local/bin --filename=composer
-    - composer install
+    - composer install --no-ansi
     - composer test-wcc
 
 test:php-5:
   image: "iras/php5-fpm"
   script:
     - wget http://getcomposer.org/installer -O - | php -- --install-dir=/usr/local/bin --filename=composer
-    - composer install
+    - composer install --no-ansi
     - composer test
