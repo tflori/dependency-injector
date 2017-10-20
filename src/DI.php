@@ -17,6 +17,9 @@ namespace DependencyInjector;
  */
 class DI
 {
+    // php 5.4 class workaround
+    const _CLASS = __CLASS__;
+
     protected static $instances     = [];
     protected static $dependencies = [];
 
@@ -38,7 +41,6 @@ class DI
             }
 
             return call_user_func(self::$dependencies[$name]['getter']);
-
         } elseif (class_exists($name)) {
             $reflection = new \ReflectionClass($name);
 
@@ -132,6 +134,9 @@ class DI
         return isset(self::$instances[$name]) || isset(self::$dependencies[$name]);
     }
 
+    /**
+     * @codeCoverageIgnore We never instantiate this class
+     */
     private function __construct()
     {
     }

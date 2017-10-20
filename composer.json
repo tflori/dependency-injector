@@ -19,8 +19,9 @@
     }
   ],
   "scripts": {
-    "test": "phpunit",
-    "test-wcc": "phpunit --coverage-html coverage"
+    "code-style": "phpcs --standard=PSR2 src && phpcs --standard=PSR2 --ignore=example tests",
+    "test": "vendor/phpunit/phpunit/phpunit",
+    "coverage": "vendor/phpunit/phpunit/phpunit --coverage-text"
   },
   "require": {
     "php": "^5.4.0 || ^7.0"
@@ -32,6 +33,11 @@
   "autoload": {
     "psr-4": {
       "DependencyInjector\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "DependencyInjector\\Test\\": "tests/"
     }
   }
 }

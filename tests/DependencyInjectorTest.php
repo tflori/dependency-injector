@@ -1,7 +1,12 @@
 <?php
 
+namespace DepenencyInjector\Test;
+
+use DateTime;
+use DependencyInjector\Exception;
 use PHPUnit\Framework\TestCase;
 use DependencyInjector\DI;
+use ReflectionClass;
 
 class DependencyInjectorTest extends TestCase
 {
@@ -12,40 +17,36 @@ class DependencyInjectorTest extends TestCase
         parent::tearDown();
     }
 
-    /**
-     * Test that the setup works - the class should exist
-     */
-    public function testSetUp()
+    /** Test that the setup works - the class should exist
+     * @test */
+    public function setUp()
     {
         self::assertTrue(class_exists('DependencyInjector\DI'));
     }
 
-    /**
-     * Test that constructor is not callable
-     */
-    public function testPrivateConstructor()
+    /** Test that constructor is not callable
+     * @test */
+    public function privateConstructor()
     {
-        $refDI        = new ReflectionClass(DI::class);
+        $refDI        = new ReflectionClass(DI::_CLASS);
         $refConstruct = $refDI->getMethod('__construct');
 
         self::assertTrue($refConstruct->isPrivate());
     }
 
-    /**
-     * Test that DI::get() throws a exception when the requested dependency is unknown.
-     */
-    public function testGetThrowsForUnknownDependencies()
+    /** Test that DI::get() throws a exception when the requested dependency is unknown.
+     * @test */
+    public function getThrowsForUnknownDependencies()
     {
-        $this->expectException(DependencyInjector\Exception::class);
+        $this->expectException(Exception::_CLASS);
         $this->expectExceptionMessage("Unknown dependency 'unknown'");
 
         DI::get('unknown');
     }
 
-    /**
-     * Test that DI::set() stores something.
-     */
-    public function testSetStoresSomethingNotCallable()
+    /** Test that DI::set() stores something.
+     * @test */
+    public function setStoresSomethingNotCallable()
     {
         $something = [$this, 'nonExistingMethod'];
 
@@ -54,10 +55,9 @@ class DependencyInjectorTest extends TestCase
         self::assertEquals($something, DI::get('something'));
     }
 
-    /**
-     * Test that DI::get() executes the given function and returns the return value.
-     */
-    public function testGetExecutesAnonymousFunctions()
+    /** Test that DI::get() executes the given function and returns the return value.
+     * @test */
+    public function getExecutesAnonymousFunctions()
     {
         DI::set('anonymous', function () {
             return 'fooBar';
@@ -68,7 +68,8 @@ class DependencyInjectorTest extends TestCase
         self::assertSame('fooBar', $result);
     }
 
-    public function testGetExecutesCallable()
+     /** @test */
+    public function getExecutesCallable()
     {
         DI::set('getter', [$this, 'getDependencyExample']);
 
@@ -82,7 +83,8 @@ class DependencyInjectorTest extends TestCase
         return 'fooBar';
     }
 
-    public function testSetStoresValue()
+     /** @test */
+    public function setStoresValue()
     {
         $something = [$this, 'getDependencyExample'];
         DI::set('array', $something, false, true);
@@ -92,10 +94,9 @@ class DependencyInjectorTest extends TestCase
         self::assertSame($something, $result);
     }
 
-    /**
-     * Test that the function got not executed before get.
-     */
-    public function testSetDoesNotExecute()
+    /** Test that the function got not executed before get.
+     * @test */
+    public function setDoesNotExecute()
     {
         $calls = 0;
 
@@ -106,10 +107,9 @@ class DependencyInjectorTest extends TestCase
         self::assertSame(0, $calls);
     }
 
-    /**
-     * Test that the function got executed only once.
-     */
-    public function testGet_executesOnce()
+    /** Test that the function got executed only once.
+     * @test */
+    public function getExecutesOnce()
     {
         $calls = 0;
         DI::set('callOnce', function () use (&$calls) {
@@ -123,10 +123,9 @@ class DependencyInjectorTest extends TestCase
         self::assertSame(1, $calls);
     }
 
-    /**
-     * Test that a non singleton got executed for each get.
-     */
-    public function testGet_executesNonSingleton()
+    /** Test that a non singleton got executed for each get.
+     * @test */
+    public function getExecutesNonSingleton()
     {
         $calls = 0;
         DI::set('callTwice', function () use (&$calls) {
@@ -140,10 +139,9 @@ class DependencyInjectorTest extends TestCase
         self::assertSame(2, $calls);
     }
 
-    /**
-     * Test that DI::set() overrides created instances.
-     */
-    public function testSet_overridesInstances()
+    /** Test that DI::set() overrides created instances.
+     * @test */
+    public function setOverridesInstances()
     {
         DI::set('microtime', function () {
             return microtime(true);
@@ -158,10 +156,9 @@ class DependencyInjectorTest extends TestCase
         self::assertNotSame($result1, $result2);
     }
 
-    /**
-     * Test that you can get instances with magic method.
-     */
-    public function testGet_callStatic()
+    /** Test that you can get instances with magic method.
+     * @test */
+    public function getCallStatic()
     {
         DI::set('magicCall', true);
 
@@ -171,20 +168,18 @@ class DependencyInjectorTest extends TestCase
         self::assertTrue($result);
     }
 
-    /**
-     * Test that undefined dependencies return the class name if it exists.
-     */
-    public function testGet_returnsClassName()
+    /** Test that undefined dependencies return the class name if it exists.
+     * @test */
+    public function getReturnsClassName()
     {
         $result = DI::get(__CLASS__);
     }
 
-    /**
-     * Test that a class name has to be case sensitive.
-     */
-    public function testGet_classNameIsCaseSensitive()
+    /** Test that a class name has to be case sensitive.
+     * @test */
+    public function getClassNameIsCaseSensitive()
     {
-        $this->expectException(DependencyInjector\Exception::class);
+        $this->expectException(Exception::_CLASS);
         $this->expectExceptionMessage("Unknown dependency '" . strtolower(__CLASS__) . "'");
 
         $result = DI::get(strtolower(__CLASS__));
@@ -192,10 +187,9 @@ class DependencyInjectorTest extends TestCase
         self::assertNotSame(strtolower(__CLASS__), $result);
     }
 
-    /**
-     * Test that you can override class names.
-     */
-    public function testGet_returnsStored()
+    /** Test that you can override class names.
+     * @test */
+    public function getReturnsStored()
     {
         DI::set(__CLASS__, 'FooBar');
 
@@ -204,10 +198,9 @@ class DependencyInjectorTest extends TestCase
         self::assertSame('FooBar', $result);
     }
 
-    /**
-     * Test that DI::reset() resets the DependencyInjector.
-     */
-    public function testReset()
+    /** Test that DI::reset() resets the DependencyInjector.
+     * @test */
+    public function reset()
     {
         DI::set(__CLASS__, function () {
             return 'FooBar';
@@ -219,14 +212,16 @@ class DependencyInjectorTest extends TestCase
         self::assertSame(__CLASS__, DI::get(__CLASS__));
     }
 
-    public function testHas()
+     /** @test */
+    public function has()
     {
         DI::set('foo', 'bar');
 
         self::assertTrue(DI::has('foo'));
     }
 
-    public function testDelete()
+     /** @test */
+    public function delete()
     {
         DI::set('foo', function () {
             return 'bar';
