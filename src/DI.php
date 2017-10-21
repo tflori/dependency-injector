@@ -17,10 +17,7 @@ namespace DependencyInjector;
  */
 class DI
 {
-    // php 5.4 class workaround
-    const _CLASS = __CLASS__;
-
-    protected static $instances     = [];
+    protected static $instances    = [];
     protected static $dependencies = [];
 
     /**
@@ -70,27 +67,48 @@ class DI
     /**
      * Define a dependency.
      *
-     * @param string $name
-     * @param mixed  $getter    The callable getter for this dependency or the value
-     * @param bool   $singleton Save result from $getter for later request
-     * @param bool   $isValue   Store $getter as value
+     * @param string|array $name
+     * @param mixed        $getter    The callable getter for this dependency or the value
+     * @param bool         $singleton Save result from $getter for later request
+     * @param bool         $isValue   Store $getter as value
      * @return void
      */
-    public static function set($name, $getter, $singleton = true, $isValue = false)
+    public static function set($name, $getter = null, $singleton = true, $isValue = false)
     {
-
-        if (!$isValue && is_callable($getter)) {
-            if (isset(self::$instances[$name])) {
-                unset(self::$instances[$name]);
+        if (is_array($name)) {
+            $dependencies = $name;
+            foreach ($dependencies as $name => $dependency) {
+                $params = is_array($dependency) ? $dependency : [$dependency];
+                array_unshift($params, $name);
+                self::set(...$params);
             }
-
-            self::$dependencies[$name] = [
-                'singleton' => $singleton,
-                'getter'    => $getter
-            ];
-        } else {
-            self::$instances[$name] = $getter;
+            return;
         }
+
+        if ($isValue) {
+            self::$instances[$name] = $getter;
+            return;
+        }
+
+        if (is_string($getter) && class_exists($getter)) {
+            $getter = function () use ($getter) {
+                return new $getter;
+            };
+        }
+
+        if (!is_callable($getter)) {
+            self::$instances[$name] = $getter;
+            return;
+        }
+
+        if (isset(self::$instances[$name])) {
+            unset(self::$instances[$name]);
+        }
+
+        self::$dependencies[$name] = [
+            'singleton' => $singleton,
+            'getter'    => $getter
+        ];
     }
 
     /**

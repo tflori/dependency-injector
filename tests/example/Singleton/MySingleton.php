@@ -1,23 +1,27 @@
 <?php
 
+namespace DependencyInjector\Test\example\Singleton;
+
 /**
  * Class MySingleton
  *
  * Example of a singleton pattern.
  */
-class MySingleton {
+class MySingleton
+{
     /** @var MySingleton */
-    private static $_instance;
+    private static $instance;
 
     /**
      * @return MySingleton
      */
-    public static function getInstance() {
-        if (!self::$_instance) {
-            self::$_instance = new self;
+    public static function getInstance()
+    {
+        if (!self::$instance) {
+            self::$instance = new self;
         }
 
-        return self::$_instance;
+        return self::$instance;
     }
 
     /**
@@ -25,10 +29,15 @@ class MySingleton {
      *
      * @return string
      */
-    public function getResult() {
+    public function getResult()
+    {
         return 'defaultResult';
     }
 
-    private function __construct() {}
-    private function __clone() {}
+    private function __construct()
+    {
+    }
+    private function __clone()
+    {
+    }
 }

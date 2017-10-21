@@ -1,16 +1,20 @@
 <?php
 
+namespace DependencyInjector\Test\example\Singleton;
+
 use DependencyInjector\DI;
+use Mockery;
 use PHPUnit\Framework\TestCase;
 
 require_once __DIR__ . '/legacyCode.php';
 
-class MySingletonTest extends TestCase {
+class MySingletonTest extends TestCase
+{
 
-    /**
-     * Test the default behaviour of your code.
-     */
-    public function testGetAnObject() {
+    /** Test the default behaviour of your code.
+     * @test */
+    public function nonMockedUsage()
+    {
         // act
         $result = getTheSingletonResult();
 
@@ -18,10 +22,10 @@ class MySingletonTest extends TestCase {
         self::assertSame('defaultResult', $result);
     }
 
-    /**
-     * Test to mock your singleton.
-     */
-    public function testGetAMockObject() {
+    /** Test to mock your singleton.
+     * @test */
+    public function mockedSingletonUsage()
+    {
         // prepare the mock
         $mock = Mockery::mock(MySingleton::class);
         $mock->shouldIgnoreMissing();
@@ -38,7 +42,10 @@ class MySingletonTest extends TestCase {
         self::assertSame('differentResult', $result);
     }
 
-    public function testGetResultFromMock() {
+    /** Test to provide your singleton as dependency
+     * @test */
+    public function mockedDependencyUsage()
+    {
         // assign
         $mock = Mockery::mock(MySingleton::class);
         $mock->shouldReceive('getResult')->once()->andReturn('anotherResult');
