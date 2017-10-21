@@ -66,4 +66,15 @@ class CommonTest extends TestCase
 
         self::assertFalse(DI::has('foo'));
     }
+
+    /** @test */
+    public function allowsAliasesForValues()
+    {
+        DI::set('password', 's3cr3t');
+
+        DI::alias('password', 'pw');
+        DI::set('password', '4n0th3r s3cr3t');
+
+        self::assertSame('4n0th3r s3cr3t', DI::get('pw'));
+    }
 }

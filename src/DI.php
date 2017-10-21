@@ -19,6 +19,7 @@ class DI
 {
     protected static $instances    = [];
     protected static $dependencies = [];
+    protected static $aliases      = [];
 
     /**
      * Get a previously defined dependency identified by $name.
@@ -29,6 +30,10 @@ class DI
      */
     public static function get($name)
     {
+        if (isset(self::$aliases[$name])) {
+            $name = self::$aliases[$name];
+        }
+
         if (isset(self::$instances[$name])) {
             return self::$instances[$name];
         } elseif (isset(self::$dependencies[$name])) {
@@ -109,6 +114,17 @@ class DI
             'singleton' => $singleton,
             'getter'    => $getter
         ];
+    }
+
+    /**
+     * Store an alias $name for $origin
+     *
+     * @param string $origin
+     * @param string $name
+     */
+    public static function alias($origin, $name)
+    {
+        self::$aliases[$name] = $origin;
     }
 
     /**
