@@ -84,4 +84,21 @@ class SetTest extends TestCase
         self::assertInstanceOf(DatabaseObject::class, $dbo);
         self::assertSame(DatabaseObject::class, $class);
     }
+
+    /** @test */
+    public function arraysWithStaticCallables()
+    {
+        DI::set([
+            'fb' => [__CLASS__, 'initDependency'],
+        ]);
+
+        $result = DI::get('fb');
+
+        self::assertSame('foobar', $result);
+    }
+
+    public static function initDependency()
+    {
+        return 'foobar';
+    }
 }

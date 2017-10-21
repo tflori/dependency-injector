@@ -83,7 +83,7 @@ class DI
         if (is_array($name)) {
             $dependencies = $name;
             foreach ($dependencies as $name => $dependency) {
-                $params = is_array($dependency) ? $dependency : [$dependency];
+                $params = is_array($dependency) && !is_callable($dependency) ? $dependency : [$dependency];
                 array_unshift($params, $name);
                 self::set(...$params);
             }
