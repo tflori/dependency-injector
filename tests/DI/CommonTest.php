@@ -77,4 +77,15 @@ class CommonTest extends TestCase
 
         self::assertSame('4n0th3r s3cr3t', DI::get('pw'));
     }
+
+    /** @test */
+    public function resetsAliasWhenRegisterDependency()
+    {
+        DI::set('password', 's3cr3t');
+        DI::alias('password', 'pw');
+
+        DI::set('pw', 'parent worker');
+
+        self::assertSame('parent worker', DI::get('pw'));
+    }
 }

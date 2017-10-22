@@ -107,6 +107,10 @@ class DI
             return;
         }
 
+        if (isset(self::$aliases[$name])) {
+            unset(self::$aliases[$name]);
+        }
+
         if ($isValue) {
             self::$instances[$name] = $getter;
             return;
