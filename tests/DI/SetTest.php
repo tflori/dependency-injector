@@ -4,7 +4,7 @@ namespace DependencyInjector\Test\DI;
 
 use DependencyInjector\DI;
 use DependencyInjector\Test\example\DataProvider\DatabaseObject;
-use DependencyInjector\Test\example\Factory\Memcache;
+use DependencyInjector\Test\example\Factory\Cache;
 use DependencyInjector\Test\example\Singleton\MySingleton;
 use PHPUnit\Framework\TestCase;
 
@@ -75,11 +75,11 @@ class SetTest extends TestCase
     /** @test */
     public function acceptsFactories()
     {
-        DI::set('memcache', Memcache::class);
+        DI::set('memcache', Cache::class);
 
         $memcache = DI::get('memcache');
 
-        self::assertInstanceOf(\Memcached::class, $memcache);
+        self::assertRegExp('/^' . preg_quote(Cache::class) . '#\d+$/', $memcache);
     }
 
     /** @test */

@@ -4,12 +4,14 @@ namespace DependencyInjector\Test\example\Factories;
 
 use DependencyInjector\Factory;
 
-class Memcache extends Factory
+class Cache extends Factory
 {
+    private static $i = 1;
+
     public static $singleton = false;
 
     public static function build()
     {
-        return new \Memcache();
+        return __CLASS__ . '#' . self::$i++;
     }
 }

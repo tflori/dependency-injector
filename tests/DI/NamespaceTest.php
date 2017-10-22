@@ -19,29 +19,29 @@ class NamespaceTest extends TestCase
     {
         DI::registerNamespace(Factory::class);
 
-        $result = DI::get('memcache');
+        $result = DI::get('cache');
 
-        self::assertEquals(new \Memcached(), $result);
+        self::assertRegExp('/^' . preg_quote(Factory\Cache::class) . '#\d+$/', $result);
     }
 
     /** @test */
     public function lastInFirstOut()
     {
-        DI::registerNamespace(Factories::class);
         DI::registerNamespace(Factory::class);
+        DI::registerNamespace(Factories::class);
 
-        $result = DI::get('memcache');
+        $result = DI::get('cache');
 
-        self::assertEquals(new \Memcached(), $result);
+        self::assertRegExp('/^' . preg_quote(Factories\Cache::class) . '#\d+$/', $result);
     }
 
     /** @test */
     public function singletonFactoryByDefault()
     {
         DI::registerNamespace(Factory::class);
-        $memcache = DI::get('memcache');
+        $memcache = DI::get('cache');
 
-        $result = DI::get('memcache');
+        $result = DI::get('cache');
 
         self::assertSame($memcache, $result);
     }
@@ -50,9 +50,9 @@ class NamespaceTest extends TestCase
     public function nonSingletonFactory()
     {
         DI::registerNamespace(Factories::class);
-        $memcache = DI::get('memcache');
+        $memcache = DI::get('cache');
 
-        $result = DI::get('memcache');
+        $result = DI::get('cache');
 
         self::assertNotSame($memcache, $result);
     }
