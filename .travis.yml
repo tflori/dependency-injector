@@ -15,6 +15,7 @@ matrix:
   fast_finish: true
 
 before_script:
+  - echo "extension = memcached.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
   - composer install --no-interaction
   - sh -c '[ "$TRAVIS_PHP_VERSION" == "7.0" ] && composer require satooshi/php-coveralls:~0.6@stable || true'
   - mkdir -p build/logs
