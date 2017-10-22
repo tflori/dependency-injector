@@ -16,7 +16,7 @@ matrix:
 
 before_script:
   - composer install --no-interaction
-  - sh -c '[ "$TRAVIS_PHP_VERSION" == "7.0" ] && composer require satooshi/php-coveralls:~0.6@stable || true'
+  - sh -c '[ "$TRAVIS_PHP_VERSION" = "7.0" ] && composer require satooshi/php-coveralls:~0.6@stable || true'
   - mkdir -p build/logs
 
 script:
