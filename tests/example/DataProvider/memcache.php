@@ -1,7 +1,8 @@
 <?php
 
 // before
-//function getMemcache() {
+//function getMemcache()
+//{
 //    static $memcache;
 //    if (!$memcache) {
 //        $memcache = new Memcached();
@@ -14,13 +15,14 @@
 
 use DependencyInjector\DI;
 
-DI::set('memcache', function() {
+DI::set('memcache', function () {
     $memcache = new Memcached();
     $memcache->addServer('localhost', 11211);
     return $memcache;
 });
 
 // keep the function for your not refactored lagacy code:
-function getMemcache() {
+function getMemcache()
+{
     return DI::get('memcache');
 }

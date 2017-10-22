@@ -1,10 +1,13 @@
 <?php
 
+namespace DependencyInjector\Test\example\DataProvider;
+
 use DependencyInjector\DI;
 
-class DatabaseObject {
+class DatabaseObject
+{
     /**
-     * @var PDO
+     * @var \PDO
      */
     private static $connection;
 
@@ -13,25 +16,27 @@ class DatabaseObject {
      *
      * @param string $sql
      * @return array
-     * @throws Exception
+     * @throws \Exception
      */
-    public function query($sql) {
+    public function query($sql)
+    {
         $connection = self::getConnection();
         $result = $connection->query($sql);
 
         if (!$result) {
-            throw new Exception('SQL error');
+            throw new \Exception('SQL error');
         }
 
         return $result->fetchAll();
     }
 
     /**
-     * @return PDO
+     * @return \PDO
      */
-    private static function getConnection() {
+    private static function getConnection()
+    {
         if (!self::$connection) {
-            self::$connection = new PDO('mysql:host=localhost;dbname=anything');
+            self::$connection = new \PDO('mysql:host=localhost;dbname=anything');
         }
 
         return self::$connection;

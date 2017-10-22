@@ -1,21 +1,22 @@
 <?php
 
-use DependencyInjector\DI;
+namespace DependencyInjector\Test\example\Singleton;
 
-require_once __DIR__ . '/MySingleton.php';
+use DependencyInjector\DI;
 
 /**
  * It's just a simple function that is using MySingleton static method.
  *
  * @return string
  */
-function getTheSingletonResult() {
+function getTheSingletonResult()
+{
 
     // before it was untestable
     // $singleton = MySingleton::getInstance();
 
     /** @var $singleton MySingleton */
-    $class = DI::get('MySingleton');
+    $class = DI::get(MySingleton::class);
     $singleton = $class::getInstance();
 
     return $singleton->getResult();
@@ -26,7 +27,8 @@ function getTheSingletonResult() {
  *
  * Uses the singleton to get a result.
  */
-class SingletonUser {
+class SingletonUser
+{
 
     /**
      * This method shows a second way how to rewrite existing code to be testable. But remember that you have to
@@ -37,7 +39,8 @@ class SingletonUser {
      *
      * @return mixed
      */
-    public function getResult() {
+    public function getResult()
+    {
 
         // before it was untestable
         // return MySingleton::getInstance()->getResult();

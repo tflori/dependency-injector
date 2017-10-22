@@ -16,10 +16,10 @@ matrix:
 
 before_script:
   - composer install --no-interaction
-  - sh -c '[ "$TRAVIS_PHP_VERSION" == "7.0" ] && composer require satooshi/php-coveralls:~0.6@stable || true'
+  - sh -c '[ "$TRAVIS_PHP_VERSION" = "7.0" ] && composer require satooshi/php-coveralls:~0.6@stable || true'
   - mkdir -p build/logs
 
 script:
   - composer code-style
-  - vendor/bin/phpunit -c phpunit.xml --coverage-clover=build/logs/clover.xml --coverage-text
+  - vendor/bin/phpunit --color=always -c phpunit.xml --coverage-clover=build/logs/clover.xml --coverage-text
   - sh -c '[ "$TRAVIS_PHP_VERSION" = "7.0" ] && php vendor/bin/coveralls -v || true'

@@ -20,7 +20,7 @@
   ],
   "scripts": {
     "code-style": "phpcs --standard=PSR2 src && phpcs --standard=PSR2 --ignore=example tests",
-    "test": "phpunit",
+    "test": "phpunit --color=always",
     "coverage": "phpunit --coverage-text"
   },
   "require": {

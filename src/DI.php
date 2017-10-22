@@ -17,11 +17,10 @@ namespace DependencyInjector;
  */
 class DI
 {
-    // php 5.4 class workaround
-    const _CLASS = __CLASS__;
-
-    protected static $instances     = [];
+    protected static $instances    = [];
     protected static $dependencies = [];
+    protected static $aliases      = [];
+    protected static $namespaces   = [];
 
     /**
      * Get a previously defined dependency identified by $name.
@@ -32,16 +31,36 @@ class DI
      */
     public static function get($name)
     {
+        if (isset(self::$aliases[$name])) {
+            $name = self::$aliases[$name];
+        }
+
         if (isset(self::$instances[$name])) {
             return self::$instances[$name];
-        } elseif (isset(self::$dependencies[$name])) {
+        }
+
+        if (isset(self::$dependencies[$name])) {
             if (self::$dependencies[$name]['singleton']) {
                 self::$instances[$name] = call_user_func(self::$dependencies[$name]['getter']);
                 return self::$instances[$name];
             }
 
             return call_user_func(self::$dependencies[$name]['getter']);
-        } elseif (class_exists($name)) {
+        }
+
+        foreach (self::$namespaces as $namespace) {
+            $factory = rtrim($namespace, '\\') . '\\' . ucfirst($name);
+            if (class_exists($factory) && is_callable([$factory, 'build'])) {
+                if (isset($factory::$singleton) && $factory::$singleton) {
+                    self::$instances[$name] = $factory::build();
+                    return self::$instances[$name];
+                }
+
+                return $factory::build();
+            }
+        }
+
+        if (class_exists($name)) {
             $reflection = new \ReflectionClass($name);
 
             if ($reflection->getName() === $name) {
@@ -70,27 +89,79 @@ class DI
     /**
      * Define a dependency.
      *
-     * @param string $name
-     * @param mixed  $getter    The callable getter for this dependency or the value
-     * @param bool   $singleton Save result from $getter for later request
-     * @param bool   $isValue   Store $getter as value
+     * @param string|array $name
+     * @param mixed        $getter    The callable getter for this dependency or the value
+     * @param bool         $singleton Save result from $getter for later request
+     * @param bool         $isValue   Store $getter as value
      * @return void
      */
-    public static function set($name, $getter, $singleton = true, $isValue = false)
+    public static function set($name, $getter = null, $singleton = true, $isValue = false)
     {
-
-        if (!$isValue && is_callable($getter)) {
-            if (isset(self::$instances[$name])) {
-                unset(self::$instances[$name]);
+        if (is_array($name)) {
+            $dependencies = $name;
+            foreach ($dependencies as $name => $dependency) {
+                $params = is_array($dependency) && !is_callable($dependency) ? $dependency : [$dependency];
+                array_unshift($params, $name);
+                self::set(...$params);
             }
-
-            self::$dependencies[$name] = [
-                'singleton' => $singleton,
-                'getter'    => $getter
-            ];
-        } else {
-            self::$instances[$name] = $getter;
+            return;
         }
+
+        if (isset(self::$aliases[$name])) {
+            unset(self::$aliases[$name]);
+        }
+
+        if ($isValue) {
+            self::$instances[$name] = $getter;
+            return;
+        }
+
+        if (is_string($getter) && class_exists($getter)) {
+            $getter = function () use ($getter) {
+                $reflection = new \ReflectionClass($getter);
+
+                if ($reflection->implementsInterface(FactoryInterface::class)) {
+                    return $getter::build();
+                }
+
+                if ($reflection->hasMethod('__construct') && $reflection->getMethod('__construct')->isPrivate() &&
+                    $reflection->hasMethod('getInstance')) {
+                    return $getter::getInstance();
+                }
+
+                return new $getter;
+            };
+        }
+
+        if (!is_callable($getter)) {
+            self::$instances[$name] = $getter;
+            return;
+        }
+
+        if (isset(self::$instances[$name])) {
+            unset(self::$instances[$name]);
+        }
+
+        self::$dependencies[$name] = [
+            'singleton' => $singleton,
+            'getter'    => $getter
+        ];
+    }
+
+    /**
+     * Store an alias $name for $origin
+     *
+     * @param string $origin
+     * @param string $name
+     */
+    public static function alias($origin, $name)
+    {
+        self::$aliases[$name] = $origin;
+    }
+
+    public static function registerNamespace($namespace)
+    {
+        array_unshift(self::$namespaces, $namespace);
     }
 
     /**
@@ -101,8 +172,9 @@ class DI
     public static function reset()
     {
 
-        self::$instances     = [];
+        self::$instances    = [];
         self::$dependencies = [];
+        self::$namespaces   = [];
     }
 
     /**

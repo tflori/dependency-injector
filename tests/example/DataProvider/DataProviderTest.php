@@ -11,9 +11,10 @@ class DataProviderTest extends TestCase {
      */
     protected $dataProvider;
 
-    protected function setUp() {
+    protected function setUp()
+    {
         // to mock the database during tests
-        DI::set('database', function() {
+        DI::set('database', function () {
             $mock = Mockery::mock('DatabaseObject');
             $mock->shouldReceive('query')->andReturn([])->byDefault();
         });
@@ -24,12 +25,15 @@ class DataProviderTest extends TestCase {
     }
 
 
-    public function tearDown() {
+    public function tearDown()
+    {
         Mockery::close();
         parent::tearDown();
     }
 
-    public function testReturnsCached() {
+    /** @test */
+    public function returnsCached()
+    {
         $mock = Mockery::mock('memcache_class');
         $mock->shouldReceive('get')->once()->with('SomeMemcacheKey')->andReturn('anyResult');
         DI::set('memcache', $mock);
@@ -39,7 +43,9 @@ class DataProviderTest extends TestCase {
         self::assertSame('anyResult', $result);
     }
 
-    public function testQueriesDatabase() {
+    /** @test */
+    public function queriesDatabase()
+    {
         $memcache = Mockery::mock('memcache_class');
         $memcache->shouldReceive('get')->andReturn(null);
         $memcache->shouldIgnoreMissing();
