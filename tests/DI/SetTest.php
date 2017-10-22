@@ -4,6 +4,8 @@ namespace DependencyInjector\Test\DI;
 
 use DependencyInjector\DI;
 use DependencyInjector\Test\example\DataProvider\DatabaseObject;
+use DependencyInjector\Test\example\Factory\Memcache;
+use DependencyInjector\Test\example\Singleton\MySingleton;
 use PHPUnit\Framework\TestCase;
 
 class SetTest extends TestCase
@@ -68,6 +70,26 @@ class SetTest extends TestCase
         $dbo = DI::get('dbo');
 
         self::assertInstanceOf(DatabaseObject::class, $dbo);
+    }
+
+    /** @test */
+    public function acceptsFactories()
+    {
+        DI::set('memcache', Memcache::class);
+
+        $memcache = DI::get('memcache');
+
+        self::assertInstanceOf(\Memcached::class, $memcache);
+    }
+
+    /** @test */
+    public function usesGetInstanceOnSingletons()
+    {
+        DI::set('singleton', MySingleton::class);
+
+        $singleton = DI::get('singleton');
+
+        self::assertInstanceOf(MySingleton::class, $singleton);
     }
 
     /** @test */

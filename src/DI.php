@@ -20,6 +20,7 @@ class DI
     protected static $instances    = [];
     protected static $dependencies = [];
     protected static $aliases      = [];
+    protected static $namespaces   = [];
 
     /**
      * Get a previously defined dependency identified by $name.
@@ -36,14 +37,30 @@ class DI
 
         if (isset(self::$instances[$name])) {
             return self::$instances[$name];
-        } elseif (isset(self::$dependencies[$name])) {
+        }
+
+        if (isset(self::$dependencies[$name])) {
             if (self::$dependencies[$name]['singleton']) {
                 self::$instances[$name] = call_user_func(self::$dependencies[$name]['getter']);
                 return self::$instances[$name];
             }
 
             return call_user_func(self::$dependencies[$name]['getter']);
-        } elseif (class_exists($name)) {
+        }
+
+        foreach (self::$namespaces as $namespace) {
+            $factory = rtrim($namespace, '\\') . '\\' . ucfirst($name);
+            if (class_exists($factory) && is_callable([$factory, 'build'])) {
+                if (isset($factory::$singleton) && $factory::$singleton) {
+                    self::$instances[$name] = $factory::build();
+                    return self::$instances[$name];
+                }
+
+                return $factory::build();
+            }
+        }
+
+        if (class_exists($name)) {
             $reflection = new \ReflectionClass($name);
 
             if ($reflection->getName() === $name) {
@@ -97,6 +114,17 @@ class DI
 
         if (is_string($getter) && class_exists($getter)) {
             $getter = function () use ($getter) {
+                $reflection = new \ReflectionClass($getter);
+
+                if ($reflection->implementsInterface(FactoryInterface::class)) {
+                    return $getter::build();
+                }
+
+                if ($reflection->hasMethod('__construct') && $reflection->getMethod('__construct')->isPrivate() &&
+                    $reflection->hasMethod('getInstance')) {
+                    return $getter::getInstance();
+                }
+
                 return new $getter;
             };
         }
@@ -127,6 +155,11 @@ class DI
         self::$aliases[$name] = $origin;
     }
 
+    public static function registerNamespace($namespace)
+    {
+        array_unshift(self::$namespaces, $namespace);
+    }
+
     /**
      * Resets the DependencyInjector
      *
@@ -135,8 +168,9 @@ class DI
     public static function reset()
     {
 
-        self::$instances     = [];
+        self::$instances    = [];
         self::$dependencies = [];
+        self::$namespaces   = [];
     }
 
     /**
