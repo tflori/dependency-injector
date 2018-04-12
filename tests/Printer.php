@@ -2,12 +2,12 @@
 
 namespace DependencyInjector\Test;
 
-use PHPUnit_Framework_AssertionFailedError;
-use PHPUnit_Framework_Test;
-use PHPUnit_Framework_Warning;
-use PHPUnit_TextUI_ResultPrinter;
+use PHPUnit\Framework\AssertionFailedError;
+use PHPUnit\Framework\Test;
+use PHPUnit\Framework\Warning;
+use PHPUnit\TextUI\ResultPrinter;
 
-class Printer extends PHPUnit_TextUI_ResultPrinter
+class Printer extends ResultPrinter
 {
 
     /**
@@ -49,7 +49,7 @@ class Printer extends PHPUnit_TextUI_ResultPrinter
     /**
      * {@inheritdoc}
      */
-    public function addError(PHPUnit_Framework_Test $test, \Exception $e, $time)
+    public function addError(\PHPUnit\Framework\Test $test, \Exception $e, $time)
     {
         $this->buildTestRow(get_class($test), $test->getName(), $time, $test->getNumAssertions(), 'fg-red');
         parent::addError($test, $e, $time);
@@ -57,7 +57,7 @@ class Printer extends PHPUnit_TextUI_ResultPrinter
     /**
      * {@inheritdoc}
      */
-    public function addFailure(PHPUnit_Framework_Test $test, PHPUnit_Framework_AssertionFailedError $e, $time)
+    public function addFailure(\PHPUnit\Framework\Test $test, \PHPUnit\Framework\AssertionFailedError $e, $time)
     {
         $this->buildTestRow(get_class($test), $test->getName(), $time, $test->getNumAssertions(), 'fg-red');
         parent::addFailure($test, $e, $time);
@@ -65,7 +65,7 @@ class Printer extends PHPUnit_TextUI_ResultPrinter
     /**
      * {@inheritdoc}
      */
-    public function addWarning(PHPUnit_Framework_Test $test, PHPUnit_Framework_Warning $e, $time)
+    public function addWarning(\PHPUnit\Framework\Test $test, \PHPUnit\Framework\Warning $e, $time)
     {
         $this->buildTestRow(get_class($test), $test->getName(), $time, $test->getNumAssertions(), 'fg-yellow');
         parent::addWarning($test, $e, $time);
@@ -73,7 +73,7 @@ class Printer extends PHPUnit_TextUI_ResultPrinter
     /**
      * {@inheritdoc}
      */
-    public function addIncompleteTest(PHPUnit_Framework_Test $test, \Exception $e, $time)
+    public function addIncompleteTest(\PHPUnit\Framework\Test $test, \Exception $e, $time)
     {
         $this->buildTestRow(get_class($test), $test->getName(), $time, $test->getNumAssertions(), 'fg-yellow');
         parent::addIncompleteTest($test, $e, $time);
@@ -81,7 +81,7 @@ class Printer extends PHPUnit_TextUI_ResultPrinter
     /**
      * {@inheritdoc}
      */
-    public function addRiskyTest(PHPUnit_Framework_Test $test, \Exception $e, $time)
+    public function addRiskyTest(\PHPUnit\Framework\Test $test, \Exception $e, $time)
     {
         $this->buildTestRow(get_class($test), $test->getName(), $time, $test->getNumAssertions(), 'fg-yellow');
         parent::addRiskyTest($test, $e, $time);
@@ -89,7 +89,7 @@ class Printer extends PHPUnit_TextUI_ResultPrinter
     /**
      * {@inheritdoc}
      */
-    public function addSkippedTest(PHPUnit_Framework_Test $test, \Exception $e, $time)
+    public function addSkippedTest(\PHPUnit\Framework\Test $test, \Exception $e, $time)
     {
         $this->buildTestRow(get_class($test), $test->getName(), $time, $test->getNumAssertions(), 'fg-cyan');
         parent::addSkippedTest($test, $e, $time);
@@ -97,9 +97,9 @@ class Printer extends PHPUnit_TextUI_ResultPrinter
     /**
      * {@inheritdoc}
      */
-    public function endTest(PHPUnit_Framework_Test $test, $time)
+    public function endTest(\PHPUnit\Framework\Test $test, $time)
     {
-        $testName = \PHPUnit_Util_Test::describe($test);
+        $testName = \PHPUnit\Util\Test::describe($test);
         if ($this->hasCompoundClassName($testName)) {
             list($className, $methodName) = explode('::', $testName);
             $this->buildTestRow($className, $methodName, $time, $test->getNumAssertions());
