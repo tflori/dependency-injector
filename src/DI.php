@@ -3,207 +3,121 @@
 namespace DependencyInjector;
 
 /**
- * Class DependencyInjector
+ * Class DI
  *
- * This is a Dependency Injector. It gives the opportunity to define how to get a dependency from outside of the code
- * that needs the dependency. This is especially helpful for testing proposes when you need to mock a dependency.
- *
- * You can never get an instance of this class. For usage you have only two static methods.
+ * A static dependency injection container.
  *
  * Example usage:
- * DependencyInjector::set('hello', function() { return 'hello'; });
- * DependencyInjector::set('world', function() { return 'world'; });
- * echo DependencyInjector:get('hello') . " " . DependencyInjector:.get('world') . "!\n";
+ * DI::set('hello', function() { return 'hello'; });
+ * DI::set('world', function() { return 'world'; });
+ * echo DI:get('hello') . " " . DI:.get('world') . "!\n";
  */
 class DI
 {
-    protected static $instances    = [];
-    protected static $dependencies = [];
-    protected static $aliases      = [];
-    protected static $namespaces   = [];
-
-    /**
-     * Get a previously defined dependency identified by $name.
-     *
-     * @param string $name
-     * @throws Exception
-     * @return mixed
-     */
-    public static function get($name)
-    {
-        if (isset(self::$aliases[$name])) {
-            $name = self::$aliases[$name];
-        }
-
-        if (isset(self::$instances[$name])) {
-            return self::$instances[$name];
-        }
-
-        if (isset(self::$dependencies[$name])) {
-            if (self::$dependencies[$name]['singleton']) {
-                self::$instances[$name] = call_user_func(self::$dependencies[$name]['getter']);
-                return self::$instances[$name];
-            }
-
-            return call_user_func(self::$dependencies[$name]['getter']);
-        }
-
-        foreach (self::$namespaces as $namespace) {
-            $factory = rtrim($namespace, '\\') . '\\' . ucfirst($name);
-            if (class_exists($factory) && is_callable([$factory, 'build'])) {
-                if (isset($factory::$singleton) && $factory::$singleton) {
-                    self::$instances[$name] = $factory::build();
-                    return self::$instances[$name];
-                }
-
-                return $factory::build();
-            }
-        }
-
-        if (class_exists($name)) {
-            $reflection = new \ReflectionClass($name);
-
-            if ($reflection->getName() === $name) {
-                self::$instances[$name] = $name;
-                return self::$instances[$name];
-            }
-        }
-
-        throw new Exception("Unknown dependency '" . $name . "'");
-    }
+    /** @var Container */
+    protected static $container;
 
     /**
      * Alias for DI::get($name). Example:
-     * DI::get('same') === DI::same()
+     * DI::get('db') === DI::db()
      *
      * @param string $name
-     * @param array  $arguments
+     * @param array  $args
      * @return mixed
      */
-    public static function __callStatic($name, $arguments)
+    public static function __callStatic($name, $args)
     {
-
-        return self::get($name);
+        return self::getContainer()->get($name, ...$args);
     }
 
-    /**
-     * Define a dependency.
-     *
-     * @param string|array $name
-     * @param mixed        $getter    The callable getter for this dependency or the value
-     * @param bool         $singleton Save result from $getter for later request
-     * @param bool         $isValue   Store $getter as value
-     * @return void
-     */
-    public static function set($name, $getter = null, $singleton = true, $isValue = false)
+    public static function get(string $name, ...$args)
+    {
+        return self::getContainer()->get($name, ...$args);
+    }
+
+    public static function set($name, $getter = null, bool $singleton = true, bool $isValue = false)
     {
         if (is_array($name)) {
             $dependencies = $name;
+            $factories = [];
             foreach ($dependencies as $name => $dependency) {
                 $params = is_array($dependency) && !is_callable($dependency) ? $dependency : [$dependency];
                 array_unshift($params, $name);
-                self::set(...$params);
+                $factories[$name] = self::getContainer()->set(...$params);
             }
-            return;
+            return $factories;
         }
 
-        if (isset(self::$aliases[$name])) {
-            unset(self::$aliases[$name]);
-        }
+        return self::getContainer()->set($name, $getter, $singleton, $isValue);
+    }
 
-        if ($isValue) {
-            self::$instances[$name] = $getter;
-            return;
-        }
+    public static function instance(string $name, $instance)
+    {
+        self::getContainer()->instance($name, $instance);
+    }
 
-        if (is_string($getter) && class_exists($getter)) {
-            $getter = function () use ($getter) {
-                $reflection = new \ReflectionClass($getter);
+    public static function share(string $name, $getter)
+    {
+        self::getContainer()->share($name, $getter);
+    }
 
-                if ($reflection->implementsInterface(FactoryInterface::class)) {
-                    return $getter::build();
-                }
+    public static function add(string $name, $getter)
+    {
+        self::getContainer()->add($name, $getter);
+    }
 
-                if ($reflection->hasMethod('__construct') && $reflection->getMethod('__construct')->isPrivate() &&
-                    $reflection->hasMethod('getInstance')) {
-                    return $getter::getInstance();
-                }
+    public static function alias(string $origin, string $name)
+    {
+        self::getContainer()->alias($origin, $name);
+    }
 
-                return new $getter;
-            };
-        }
+    public static function registerNamespace(string $namespace)
+    {
+        self::getContainer()->registerNamespace($namespace);
+    }
 
-        if (!is_callable($getter)) {
-            self::$instances[$name] = $getter;
-            return;
-        }
+    public static function delete(string $name)
+    {
+        self::getContainer()->delete($name);
+    }
 
-        if (isset(self::$instances[$name])) {
-            unset(self::$instances[$name]);
-        }
-
-        self::$dependencies[$name] = [
-            'singleton' => $singleton,
-            'getter'    => $getter
-        ];
+    public static function has(string $name)
+    {
+        self::getContainer()->has($name);
     }
 
     /**
-     * Store an alias $name for $origin
+     * Reset the static DI by replacing the Container
      *
-     * @param string $origin
-     * @param string $name
-     */
-    public static function alias($origin, $name)
-    {
-        self::$aliases[$name] = $origin;
-    }
-
-    public static function registerNamespace($namespace)
-    {
-        array_unshift(self::$namespaces, $namespace);
-    }
-
-    /**
-     * Resets the DependencyInjector
-     *
-     * @return void
+     * @return Container The created Container
      */
     public static function reset()
     {
-
-        self::$instances    = [];
-        self::$dependencies = [];
-        self::$namespaces   = [];
+        return self::$container = new Container();
     }
 
     /**
-     * Removes dependency $name
+     * Overwrite the Container
      *
-     * @param string $name
+     * @param Container $container
      */
-    public static function delete($name)
+    public static function setContainer(Container $container)
     {
-
-        if (isset(self::$instances[$name])) {
-            unset(self::$instances[$name]);
-        }
-
-        if (isset(self::$dependencies[$name])) {
-            unset(self::$dependencies[$name]);
-        }
+        self::$container = $container;
     }
 
     /**
-     * Checks if dependency $name is defined
+     * Get the current Container
      *
-     * @param string $name
-     * @return bool
+     * @return Container
      */
-    public static function has($name)
+    protected static function getContainer()
     {
+        if (!isset(self::$container)) {
+            self::$container = new Container();
+        }
 
-        return isset(self::$instances[$name]) || isset(self::$dependencies[$name]);
+        return self::$container;
     }
 
     /**
