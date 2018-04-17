@@ -17,7 +17,6 @@ interface FactoryInterface
      * Share the created instance
      *
      * @param bool $share
-     * @return mixed
      */
     public function share(bool $share = true);
 

@@ -11,7 +11,7 @@ class Container implements ContainerInterface
     /**
      * Finds an entry of the container by its identifier and returns it.
      *
-     * @param string $id   Identifier of the entry to look for.
+     * @param string $name Identifier of the entry to look for.
      * @param array  $args Any additional arguments for non shared getters
      *
      * @throws NotFoundExceptionInterface  No entry was found for **this** identifier.
@@ -19,7 +19,7 @@ class Container implements ContainerInterface
      *
      * @return mixed Entry.
      */
-    public function get($id, ...$args)
+    public function get($name, ...$args)
     {
         // convert alias
 
@@ -29,21 +29,21 @@ class Container implements ContainerInterface
 
         // search for factory (WITHOUT REFLECTION!)
 
-        return $id;
+        return $name;
     }
 
     /**
      * Returns true if the container can return an entry for the given identifier.
      * Returns false otherwise.
      *
-     * `has($id)` returning true does not mean that `get($id)` will not throw an exception.
-     * It does however mean that `get($id)` will not throw a `NotFoundExceptionInterface`.
+     * `has($name)` returning true does not mean that `get($name)` will not throw an exception.
+     * It does however mean that `get($name)` will not throw a `NotFoundExceptionInterface`.
      *
-     * @param string $id Identifier of the entry to look for.
+     * @param string $name Identifier of the entry to look for.
      *
      * @return bool
      */
-    public function has($id)
+    public function has($name)
     {
         // check for alias
 
@@ -56,7 +56,7 @@ class Container implements ContainerInterface
         return false;
     }
 
-    public function set(string $name, $getter, bool $shared = true, bool $instance = false)
+    public function set(string $name, $getter, bool $shared = true, bool $instance = false): ?FactoryInterface
     {
         // call instance if $instance
 
