@@ -2,12 +2,19 @@
 
 namespace DependencyInjector;
 
+use DependencyInjector\Exception\NotFound;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
 class Container implements ContainerInterface
 {
+    /** @var array */
+    protected $instances = [];
+
+    /** @var string[] */
+    protected $aliases = [];
+
     /**
      * Finds an entry of the container by its identifier and returns it.
      *
@@ -21,15 +28,19 @@ class Container implements ContainerInterface
      */
     public function get($name, ...$args)
     {
-        // convert alias
+        if (array_key_exists($name, $this->aliases)) {
+            $name = $this->aliases[$name];
+        }
 
-        // return instance
+        if (array_key_exists($name, $this->instances)) {
+            return $this->instances[$name];
+        }
 
         // build dependency
 
         // search for factory (WITHOUT REFLECTION!)
 
-        return $name;
+        throw new NotFound(sprintf('Name %s could not be resolved', $name));
     }
 
     /**
@@ -45,9 +56,13 @@ class Container implements ContainerInterface
      */
     public function has($name)
     {
-        // check for alias
+        if (array_key_exists($name, $this->aliases)) {
+            $name = $this->aliases[$name];
+        }
 
-        // check for instance
+        if (array_key_exists($name, $this->instances)) {
+            return true;
+        }
 
         // check for dependency
 
@@ -58,7 +73,10 @@ class Container implements ContainerInterface
 
     public function set(string $name, $getter, bool $shared = true, bool $instance = false): ?FactoryInterface
     {
-        // call instance if $instance
+        if ($instance) {
+            $this->instance($name, $getter);
+            return null;
+        }
 
         // call share if $shared
 
@@ -67,19 +85,21 @@ class Container implements ContainerInterface
 
     public function instance(string $name, $instance)
     {
-        // delete existing alias
+        if (array_key_exists($name, $this->aliases)) {
+            unset($this->aliases[$name]);
+        }
 
-        // store instance
+        $this->instances[$name] = $instance;
     }
 
-    public function share(string $name, $getter)
+    public function share(string $name, $getter): FactoryInterface
     {
         // call add
 
         // set shared
     }
 
-    public function add(string $name, $getter)
+    public function add(string $name, $getter): FactoryInterface
     {
         // delete existing alias
 
@@ -95,7 +115,7 @@ class Container implements ContainerInterface
 
         // elseif is callable $getter create a CallableFactory
 
-        // else call instance
+        // else throw
     }
 
     /**
@@ -107,16 +127,21 @@ class Container implements ContainerInterface
      *
      * @param string $origin
      * @param string $name
+     * @throws ContainerExceptionInterface
      */
     public function alias(string $origin, string $name)
     {
-        // check for $name in instances
+        if (array_key_exists($name, $this->instances)) {
+            throw new Exception(sprintf('Instance for %s already exists', $name));
+        }
         // check for $name as dependency
         // check for $name in factories
 
-        // $this->has($origin) ?
+        if (!$this->has($origin)) {
+            throw new Exception(sprintf('Origin %s could not be resolved', $origin));
+        }
 
-        // store alias
+        $this->aliases[$name] = $origin;
     }
 
     /**
@@ -126,9 +151,13 @@ class Container implements ContainerInterface
      */
     public function delete(string $name)
     {
-        // remove existing instance
+        if (array_key_exists($name, $this->instances)) {
+            unset($this->instances[$name]);
+        }
 
-        // remove existing dependency
+        if (array_key_exists($name, $this->aliases)) {
+            unset($this->aliases[$name]);
+        }
 
         // remove existing alias -> MUST NOT remove the linked dependency
     }
