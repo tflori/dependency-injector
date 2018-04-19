@@ -18,6 +18,9 @@ class Container implements ContainerInterface
     /** @var string[] */
     protected $namespaces = [];
 
+    /** @var FactoryInterface[] */
+    protected $factories = [];
+
     /**
      * Finds an entry of the container by its identifier and returns it.
      *
@@ -40,6 +43,9 @@ class Container implements ContainerInterface
         }
 
         if ($factory = $this->resolve($name)) {
+            if ($factory->isShared()) {
+                return $this->instances[$name] = $factory->build();
+            }
             /** @noinspection PhpMethodParametersCountMismatchInspection */
             // a concrete factory could use this arguments
             return $factory->build(...$args);
@@ -74,21 +80,22 @@ class Container implements ContainerInterface
 
     protected function resolve($name): ?FactoryInterface
     {
-        // return dependency if exists
-
-        foreach ($this->namespaces as $namespace) {
-            $class = sprintf($namespace, ucfirst($name));
-            if (class_exists($class)) {
-                /** @noinspection PhpUnhandledExceptionInspection */
-                // it will not throw class does not exists - we checked that before
-                $reflection = new \ReflectionClass($class);
-                if ($reflection->implementsInterface(FactoryInterface::class)) {
-                    return new $class($this);
+        if (!isset($this->factories[$name])) {
+            foreach ($this->namespaces as $namespace) {
+                $class = sprintf($namespace, ucfirst($name));
+                if (class_exists($class)) {
+                    /** @noinspection PhpUnhandledExceptionInspection */
+                    // it will not throw class does not exists - we checked that before
+                    $reflection = new \ReflectionClass($class);
+                    if ($reflection->implementsInterface(FactoryInterface::class)) {
+                        $this->factories[$name] = new $class($this);
+                        break;
+                    }
                 }
             }
         }
 
-        return null;
+        return $this->factories[$name] ?? null;
     }
 
     public function set(string $name, $getter, bool $shared = true, bool $instance = false): ?FactoryInterface
@@ -119,23 +126,42 @@ class Container implements ContainerInterface
         // set shared
     }
 
+    /**
+     * Add a factory for $name
+     *
+     * Getter can be a instance or class name of a FactoryInterface, a callable or any other Class name.
+     *
+     * @param string $name
+     * @param mixed  $getter
+     * @return FactoryInterface
+     * @throws ContainerExceptionInterface
+     */
     public function add(string $name, $getter): FactoryInterface
     {
         // delete existing alias
 
-        // if is factory instance $getter store getter
+        if ($getter instanceof FactoryInterface) {
+            return $this->factories[$name] = $getter;
+        }
 
-        // if is class $getter create a reflection
-
-            // if is factory class $getter store a new instance
-
-            // elseif is singleton create a SingletonFactory
+        if (is_string($getter) && class_exists($getter)) {
+            /** @noinspection PhpUnhandledExceptionInspection */
+            // it will not throw class does not exists - we checked that before
+            $reflection = new \ReflectionClass($getter);
+            if ($reflection->implementsInterface(FactoryInterface::class)) {
+                return $this->factories[$name] = new $getter($this);
+            } elseif ($reflection->getConstructor()->isPrivate() && is_callable([$getter, 'getInstance'])) {
+                return $this->factories[$name] = new SingletonFactory($this, $getter);
+            }
 
             // else create a ClassFactory
+        }
 
-        // elseif is callable $getter create a CallableFactory
+        if (is_callable($getter)) {
+            return $this->factories[$name] = new CallableFactory($this, $getter);
+        }
 
-        // else throw
+        throw new Exception('$getter is invalid for dependency. Maybe you want to add an instance instead?');
     }
 
     /**
@@ -154,8 +180,10 @@ class Container implements ContainerInterface
         if (array_key_exists($name, $this->instances)) {
             throw new Exception(sprintf('Instance for %s already exists', $name));
         }
-        // check for $name as dependency
-        // check for $name in factories
+
+        if ($this->resolve($name) !== null) {
+            throw new Exception(sprintf('Factory for %s already exists', $name));
+        }
 
         if (!$this->has($origin)) {
             throw new Exception(sprintf('Origin %s could not be resolved', $origin));

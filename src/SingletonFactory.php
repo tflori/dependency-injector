@@ -6,14 +6,14 @@ use Psr\Container\ContainerInterface;
 
 class SingletonFactory extends AbstractFactory
 {
-//    /** @var string */
-//    protected $class;
-//
-//    public function __construct(ContainerInterface $container, string $class = null)
-//    {
-//        $this->class = $class;
-//        parent::__construct($container);
-//    }
+    /** @var string */
+    protected $class;
+
+    public function __construct(ContainerInterface $container, string $class = null)
+    {
+        parent::__construct($container);
+        $this->class = $class;
+    }
 
     /**
      * Build the product of this factory.
@@ -27,6 +27,6 @@ class SingletonFactory extends AbstractFactory
 //            return call_user_func([$this->class, 'getInstance'], $name);
 //        }
 //
-//        return call_user_func([$this->class, 'getInstance']);
+        return call_user_func([$this->class, 'getInstance']);
     }
 }

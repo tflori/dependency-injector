@@ -3,6 +3,7 @@
 namespace DependencyInjector\Test\Container;
 
 use DependencyInjector\Container;
+use DependencyInjector\Test\Examples\DateTimeFactory;
 use Mockery\Adapter\Phpunit\MockeryTestCase;
 use Psr\Container\NotFoundExceptionInterface;
 
@@ -28,21 +29,45 @@ class RetrieveTest extends MockeryTestCase
     }
 
     /** @test */
-    public function hasReturnsTrueForStoredInstance()
+    public function factoriesUseArguments()
     {
         $container = new Container();
-        $container->instance('foo', 42);
+        $args = [];
+        $container->add('foo', function () use (&$args) {
+            $args = func_get_args();
+        });
 
-        self::assertTrue($container->has('foo'));
+        $container->get('foo', 'with', 'some', 'args');
+
+        self::assertSame(['with', 'some', 'args'], $args);
     }
 
     /** @test */
-    public function hasReturnsTrueForRegisteredAliases()
+    public function onlyNonSharedFactoriesAllowArguments()
     {
         $container = new Container();
-        $container->instance('foo', 42);
-        $container->alias('foo', 'bar');
+        $args = [];
+        $container->add('foo', function () use (&$args) {
+            $args = func_get_args();
+        })->share();
 
-        self::assertTrue($container->has('bar'));
+        $container->get('foo', 'with', 'some', 'args');
+
+        self::assertSame([], $args);
+    }
+
+    /** @test */
+    public function sharedFactoriesAreExecutedOnce()
+    {
+        $container = new Container();
+        $calls = 0;
+        $container->add('foo', function () use (&$calls) {
+            $calls++;
+        })->share();
+
+        $container->get('foo');
+        $container->get('foo');
+
+        self::assertSame(1, $calls);
     }
 }
