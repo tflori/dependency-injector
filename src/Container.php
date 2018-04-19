@@ -15,6 +15,9 @@ class Container implements ContainerInterface
     /** @var string[] */
     protected $aliases = [];
 
+    /** @var string[] */
+    protected $namespaces = [];
+
     /**
      * Finds an entry of the container by its identifier and returns it.
      *
@@ -36,9 +39,11 @@ class Container implements ContainerInterface
             return $this->instances[$name];
         }
 
-        // build dependency
-
-        // search for factory (WITHOUT REFLECTION!)
+        if ($factory = $this->resolve($name)) {
+            /** @noinspection PhpMethodParametersCountMismatchInspection */
+            // a concrete factory could use this arguments
+            return $factory->build(...$args);
+        }
 
         throw new NotFound(sprintf('Name %s could not be resolved', $name));
     }
@@ -64,11 +69,26 @@ class Container implements ContainerInterface
             return true;
         }
 
-        // check for dependency
+        return $this->resolve($name) !== null;
+    }
 
-        // check for factory
+    protected function resolve($name): ?FactoryInterface
+    {
+        // return dependency if exists
 
-        return false;
+        foreach ($this->namespaces as $namespace) {
+            $class = sprintf($namespace, ucfirst($name));
+            if (class_exists($class)) {
+                /** @noinspection PhpUnhandledExceptionInspection */
+                // it will not throw class does not exists - we checked that before
+                $reflection = new \ReflectionClass($class);
+                if ($reflection->implementsInterface(FactoryInterface::class)) {
+                    return new $class($this);
+                }
+            }
+        }
+
+        return null;
     }
 
     public function set(string $name, $getter, bool $shared = true, bool $instance = false): ?FactoryInterface
@@ -155,22 +175,30 @@ class Container implements ContainerInterface
             unset($this->instances[$name]);
         }
 
+        // remove existing dependency
+
         if (array_key_exists($name, $this->aliases)) {
             unset($this->aliases[$name]);
         }
-
-        // remove existing alias -> MUST NOT remove the linked dependency
     }
 
     /**
      * Register $namespace for FactoryInterfaces
      *
-     * @param $namespace
+     * @param string $namespace
+     * @param string $suffix
      */
-    public function registerNamespace(string $namespace)
+    public function registerNamespace(string $namespace, string $suffix = '')
     {
-        // prepend the namespace
+        $classTemplate = rtrim($namespace, '\\') . '\\%s' . $suffix;
 
-        // delete $namespace in registered namespaces
+        $p = array_search($classTemplate, $this->namespaces);
+        if ($p === 0) {
+            return; // this does not have an explicit check
+        } elseif ($p !== false) {
+            array_splice($this->namespaces, $p, 1);
+        }
+
+        array_unshift($this->namespaces, $classTemplate);
     }
 }
