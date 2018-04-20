@@ -155,7 +155,7 @@ class Container implements ContainerInterface
                       is_callable([$getter, 'getInstance'])
             ) {
                 return $this->factories[$name] = new SingletonFactory($this, $getter);
-            } else { 
+            } else {
                 return $this->factories[$name] = new ClassFactory($this, $getter);
             }
         }
