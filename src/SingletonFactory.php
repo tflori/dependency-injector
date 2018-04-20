@@ -18,15 +18,16 @@ class SingletonFactory extends AbstractFactory
     /**
      * Build the product of this factory.
      *
-     * @param null $name
+     * @param array $args
      * @return mixed
      */
-    public function build($name = null)
+    public function build(...$args)
     {
-//        if ($name && !$this->isShared()) {
-//            return call_user_func([$this->class, 'getInstance'], $name);
-//        }
-//
         return call_user_func([$this->class, 'getInstance']);
+    }
+
+    public function share(bool $share = true)
+    {
+        return; // the singleton factory cannot be shared
     }
 }

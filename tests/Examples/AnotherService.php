@@ -4,7 +4,10 @@ namespace DependencyInjector\Test\Examples;
 
 class AnotherService
 {
-    public function __construct(SomeService $service)
+    public $args;
+
+    public function __construct(SomeService $service, ...$args)
     {
+        $this->args = $args;
     }
 }

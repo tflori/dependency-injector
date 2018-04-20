@@ -150,11 +150,16 @@ class Container implements ContainerInterface
             $reflection = new \ReflectionClass($getter);
             if ($reflection->implementsInterface(FactoryInterface::class)) {
                 return $this->factories[$name] = new $getter($this);
-            } elseif ($reflection->getConstructor()->isPrivate() && is_callable([$getter, 'getInstance'])) {
-                return $this->factories[$name] = new SingletonFactory($this, $getter);
-            }
 
-            // else create a ClassFactory
+            } elseif ($reflection->getConstructor() &&
+                      $reflection->getConstructor()->isPrivate() &&
+                      is_callable([$getter, 'getInstance'])
+            ) {
+                return $this->factories[$name] = new SingletonFactory($this, $getter);
+
+            } else {
+                return $this->factories[$name] = new ClassFactory($this, $getter);
+            }
         }
 
         if (is_callable($getter)) {

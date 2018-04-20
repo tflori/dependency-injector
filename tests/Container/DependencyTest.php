@@ -3,11 +3,13 @@
 namespace DependencyInjector\Test\Container;
 
 use DependencyInjector\CallableFactory;
+use DependencyInjector\ClassFactory;
 use DependencyInjector\Container;
 use DependencyInjector\Exception;
 use DependencyInjector\SingletonFactory;
 use DependencyInjector\Test\Examples\DateTimeFactory;
 use DependencyInjector\Test\Examples\SingletonService;
+use DependencyInjector\Test\Examples\SomeService;
 use Mockery\Adapter\Phpunit\MockeryTestCase;
 use Mockery as m;
 
@@ -18,7 +20,7 @@ class DependencyTest extends MockeryTestCase
     {
         $container = new Container();
 
-        self::assertInstanceOf(CallableFactory::class, $container->add('foo', function() {
+        self::assertInstanceOf(CallableFactory::class, $container->add('foo', function () {
             return 42;
         }));
     }
@@ -49,10 +51,18 @@ class DependencyTest extends MockeryTestCase
     }
 
     /** @test */
+    public function returnsAClassFactory()
+    {
+        $container = new Container();
+
+        self::assertInstanceOf(ClassFactory::class, $container->add('service', SomeService::class));
+    }
+
+    /** @test */
     public function resolvesUsingTheCallback()
     {
         $container = new Container();
-        $container->add('foo', function() {
+        $container->add('foo', function () {
             return 42;
         });
 
@@ -87,6 +97,15 @@ class DependencyTest extends MockeryTestCase
         $container->add('singleton', SingletonService::class);
 
         self::assertInstanceOf(SingletonService::class, $container->get('singleton'));
+    }
+
+    /** @test */
+    public function resolvesUsingClassFactory()
+    {
+        $container = new Container();
+        $container->add('service', SomeService::class);
+
+        self::assertInstanceOf(SomeService::class, $container->get('service'));
     }
 
     /** @test */
