@@ -51,19 +51,6 @@ class ContainerTest extends MockeryTestCase
     }
 
     /** @test */
-    public function delegatesSet()
-    {
-        DI::setContainer($this->container);
-        $factory = new DateTimeFactory($this->container);
-
-        $this->container->shouldReceive('set')
-            ->with('foo', 'bar', true, false)
-            ->once()->andReturn($factory);
-
-        self::assertSame($factory, DI::set('foo', 'bar'));
-    }
-
-    /** @test */
     public function delegatesGet()
     {
         DI::setContainer($this->container);
@@ -185,29 +172,5 @@ class ContainerTest extends MockeryTestCase
             ->once()->andReturn('bar');
 
         self::assertSame('bar', DI::foo());
-    }
-
-    /** @test */
-    public function allowsArrayInSetAndReturnsFactories()
-    {
-        DI::setContainer($this->container);
-        $factory = new DateTimeFactory($this->container);
-
-        $this->container->shouldReceive('set')
-            ->with('foo', 42)
-            ->once()->andReturn(null);
-        $this->container->shouldReceive('set')
-            ->with('bar', 23, true, true)
-            ->once()->andReturn($factory);
-
-        $factories = DI::set([
-            'foo' => 42,
-            'bar' => [23, true, true],
-        ]);
-
-        self::assertSame([
-            'foo' => null,
-            'bar' => $factory,
-        ], $factories);
     }
 }

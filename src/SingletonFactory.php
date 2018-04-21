@@ -26,6 +26,9 @@ class SingletonFactory extends AbstractFactory
         return call_user_func([$this->class, 'getInstance']);
     }
 
+    /**
+     * @codeCoverageIgnore This is just disabling sharing and trivial
+     */
     public function share(bool $share = true)
     {
         return; // the singleton factory cannot be shared

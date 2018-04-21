@@ -98,18 +98,12 @@ class Container implements ContainerInterface
         return $this->factories[$name] ?? null;
     }
 
-    public function set(string $name, $getter, bool $shared = true, bool $instance = false): ?FactoryInterface
-    {
-        if ($instance) {
-            $this->instance($name, $getter);
-            return null;
-        }
-
-        // call share if $shared
-
-        // call add otherwise
-    }
-
+    /**
+     * Add a instance (or any other value) to the container.
+     *
+     * @param string $name
+     * @param mixed  $instance
+     */
     public function instance(string $name, $instance)
     {
         if (array_key_exists($name, $this->aliases)) {
@@ -119,11 +113,19 @@ class Container implements ContainerInterface
         $this->instances[$name] = $instance;
     }
 
+    /**
+     * Shortcut to `$c->add('service', $getter)->share()`
+     *
+     * @param string $name
+     * @param mixed  $getter
+     * @return FactoryInterface
+     * @throws ContainerExceptionInterface
+     */
     public function share(string $name, $getter): FactoryInterface
     {
-        // call add
-
-        // set shared
+        $factory = $this->add($name, $getter);
+        $factory->share();
+        return $factory;
     }
 
     /**
@@ -138,33 +140,34 @@ class Container implements ContainerInterface
      */
     public function add(string $name, $getter): FactoryInterface
     {
-        // delete existing alias
-
+        $factory = null;
         if ($getter instanceof FactoryInterface) {
-            return $this->factories[$name] = $getter;
-        }
-
-        if (is_string($getter) && class_exists($getter)) {
+            $factory = $getter;
+        } elseif (is_string($getter) && class_exists($getter)) {
             /** @noinspection PhpUnhandledExceptionInspection */
             // it will not throw class does not exists - we checked that before
             $reflection = new \ReflectionClass($getter);
             if ($reflection->implementsInterface(FactoryInterface::class)) {
-                return $this->factories[$name] = new $getter($this);
+                $factory = new $getter($this);
             } elseif ($reflection->getConstructor() &&
                       $reflection->getConstructor()->isPrivate() &&
                       is_callable([$getter, 'getInstance'])
             ) {
-                return $this->factories[$name] = new SingletonFactory($this, $getter);
+                $factory = new SingletonFactory($this, $getter);
             } else {
-                return $this->factories[$name] = new ClassFactory($this, $getter);
+                $factory = new ClassFactory($this, $getter);
             }
+        } elseif (is_callable($getter)) {
+            $factory = new CallableFactory($this, $getter);
         }
 
-        if (is_callable($getter)) {
-            return $this->factories[$name] = new CallableFactory($this, $getter);
+        if (!$factory) {
+            throw new Exception('$getter is invalid for dependency. Maybe you want to add an instance instead?');
         }
 
-        throw new Exception('$getter is invalid for dependency. Maybe you want to add an instance instead?');
+        $this->delete($name);
+        $this->factories[$name] = $factory;
+        return $factory;
     }
 
     /**
@@ -206,7 +209,9 @@ class Container implements ContainerInterface
             unset($this->instances[$name]);
         }
 
-        // remove existing dependency
+        if (array_key_exists($name, $this->factories)) {
+            unset($this->factories[$name]);
+        }
 
         if (array_key_exists($name, $this->aliases)) {
             unset($this->aliases[$name]);

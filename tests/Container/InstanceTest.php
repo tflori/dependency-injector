@@ -44,15 +44,4 @@ class InstanceTest extends MockeryTestCase
 
         self::assertSame(23, $container->get('bar'));
     }
-
-    /** @test */
-    public function setForwardsToInstance()
-    {
-        $container = new Container();
-        $container->set('foo', function () {
-            return 42;
-        }, true, true);
-
-        self::assertInstanceOf(\Closure::class, $container->get('foo'));
-    }
 }

@@ -118,4 +118,52 @@ class DependencyTest extends MockeryTestCase
 
         $container->add('foo', 'bar');
     }
+
+    /** @test */
+    public function overwritesExistingAlias()
+    {
+        $container = new Container();
+        $container->instance('foo', 'bar');
+        $container->alias('foo', 'service');
+
+        $container->add('service', SomeService::class);
+
+        self::assertInstanceOf(SomeService::class, $container->get('service'));
+    }
+
+    /** @test */
+    public function overwritesExistingInstances()
+    {
+        $container = new Container();
+        $container->instance('service', 'foo bar');
+
+        $container->add('service', SomeService::class);
+
+        self::assertInstanceOf(SomeService::class, $container->get('service'));
+    }
+
+    /** @test */
+    public function shareCallsShareOnTheFactory()
+    {
+        $container = new Container();
+        $factory = m::mock(DateTimeFactory::class);
+
+        $factory->shouldReceive('share')->once();
+
+        $container->share('dt', $factory);
+    }
+
+    /** @test */
+    public function shareUsesAddAndReturnsFactory()
+    {
+        $container = m::mock(Container::class)->makePartial();
+
+        $container->shouldReceive('add')
+            ->with('dt', DateTimeFactory::class)
+            ->once()->andReturn(new DateTimeFactory($container));
+
+        $factory = $container->share('dt', DateTimeFactory::class);
+
+        self::assertInstanceOf(DateTimeFactory::class, $factory);
+    }
 }

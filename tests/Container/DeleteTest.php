@@ -3,12 +3,13 @@
 namespace DependencyInjector\Test\Container;
 
 use DependencyInjector\Container;
+use DependencyInjector\Test\Examples\SomeService;
 use Mockery\Adapter\Phpunit\MockeryTestCase;
 
 class DeleteTest extends MockeryTestCase
 {
     /** @test */
-    public function deletesAnInstance()
+    public function removesAnInstance()
     {
         $container = new Container();
         $container->instance('foo', 42);
@@ -16,6 +17,17 @@ class DeleteTest extends MockeryTestCase
         $container->delete('foo');
 
         self::assertFalse($container->has('foo'));
+    }
+
+    /** @test */
+    public function removesAFactory()
+    {
+        $container = new Container();
+        $container->add('service', SomeService::class);
+
+        $container->delete('service');
+
+        self::assertFalse($container->has('service'));
     }
 
     /** @test */

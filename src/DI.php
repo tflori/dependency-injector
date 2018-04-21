@@ -2,6 +2,9 @@
 
 namespace DependencyInjector;
 
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
+
 /**
  * Class DI
  *
@@ -79,6 +82,7 @@ class DI
      * | Other classes                       | MyService::class          | ClassFactory     |
      * | non callable                        | new MyService             | null             |
      *
+     * @deprecated This method is for backward compatibility only. Please use instance, share and add in the future.
      * @param string|array $name
      * @param null         $getter
      * @param bool         $share
@@ -92,12 +96,27 @@ class DI
             $factories = [];
             foreach ($dependencies as $name => $dependency) {
                 $params = is_array($dependency) && !is_callable($dependency) ? $dependency : [$dependency];
-                $factories[$name] = self::getContainer()->set($name, ...$params);
+                /** @noinspection PhpDeprecationInspection */
+                // this is just how it was before and we are already in this deprecated method
+                $factories[$name] = self::set($name, ...$params);
             }
             return $factories;
         }
 
-        return self::getContainer()->set($name, $getter, $share, $instance);
+        if ($instance ||
+            !$getter instanceof FactoryInterface &&
+            (!is_string($getter) || !class_exists($getter)) &&
+            !is_callable($getter)
+        ) {
+            self::getContainer()->instance($name, $getter);
+            return null;
+        }
+
+        if ($share) {
+            return self::getContainer()->share($name, $getter);
+        }
+
+        return self::getContainer()->add($name, $getter);
     }
 
     /**
@@ -200,7 +219,7 @@ class DI
      *
      * @return Container
      */
-    public static function getContainer()
+    public static function getContainer(): Container
     {
         if (!isset(self::$container)) {
             self::$container = new Container();
