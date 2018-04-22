@@ -109,7 +109,7 @@ class SetTest extends MockeryTestCase
 
         $factories = DI::set([
             'foo' => 42,
-            'bar' => [function() {
+            'bar' => [function () {
                 return 23;
             }, true, true],
             'dt' => DateTimeFactory::class,
