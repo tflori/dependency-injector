@@ -1,17 +1,17 @@
 <?php
 
-namespace DependencyInjector;
+namespace DependencyInjector\Factory;
 
+use DependencyInjector\FactoryInterface;
 use Psr\Container\ContainerInterface;
 
-class SingletonFactory extends AbstractFactory
+class SingletonFactory implements FactoryInterface
 {
     /** @var string */
     protected $class;
 
     public function __construct(ContainerInterface $container, string $class = null)
     {
-        parent::__construct($container);
         $this->class = $class;
     }
 
@@ -21,16 +21,8 @@ class SingletonFactory extends AbstractFactory
      * @param array $args
      * @return mixed
      */
-    public function build(...$args)
+    public function getInstance(...$args)
     {
         return call_user_func([$this->class, 'getInstance']);
-    }
-
-    /**
-     * @codeCoverageIgnore This is just disabling sharing and trivial
-     */
-    public function share(bool $share = true)
-    {
-        return; // the singleton factory cannot be shared
     }
 }

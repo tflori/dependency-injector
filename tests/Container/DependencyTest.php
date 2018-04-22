@@ -2,16 +2,16 @@
 
 namespace DependencyInjector\Test\Container;
 
-use DependencyInjector\CallableFactory;
-use DependencyInjector\ClassFactory;
 use DependencyInjector\Container;
 use DependencyInjector\Exception;
-use DependencyInjector\SingletonFactory;
+use DependencyInjector\Factory\CallableFactory;
+use DependencyInjector\Factory\ClassFactory;
+use DependencyInjector\Factory\SingletonFactory;
 use DependencyInjector\Test\Examples\DateTimeFactory;
 use DependencyInjector\Test\Examples\SingletonService;
 use DependencyInjector\Test\Examples\SomeService;
-use Mockery\Adapter\Phpunit\MockeryTestCase;
 use Mockery as m;
+use Mockery\Adapter\Phpunit\MockeryTestCase;
 
 class DependencyTest extends MockeryTestCase
 {
@@ -85,7 +85,7 @@ class DependencyTest extends MockeryTestCase
         $factory = m::mock(DateTimeFactory::class, [$container])->makePartial();
         $container->add('dt', $factory);
 
-        $factory->shouldReceive('build')->once()->andReturn(new \DateTime());
+        $factory->shouldReceive('getInstance')->once()->andReturn(new \DateTime());
 
         $container->get('dt');
     }

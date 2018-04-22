@@ -1,6 +1,6 @@
 <?php
 
-namespace DependencyInjector;
+namespace DependencyInjector\Factory;
 
 use Psr\Container\ContainerInterface;
 
@@ -19,7 +19,7 @@ class CallableFactory extends AbstractFactory
      *
      * @return mixed
      */
-    public function build(...$args)
+    protected function build(...$args)
     {
         return call_user_func_array($this->callable, $args);
     }

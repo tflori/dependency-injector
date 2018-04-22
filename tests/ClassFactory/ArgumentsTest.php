@@ -2,14 +2,14 @@
 
 namespace DependencyInjector\Test\ClassFactory;
 
-use DependencyInjector\ClassFactory;
 use DependencyInjector\Container;
-use DependencyInjector\StringArgument;
+use DependencyInjector\Factory\ClassFactory;
+use DependencyInjector\Factory\StringArgument;
 use DependencyInjector\Test\Examples\AnotherService;
 use DependencyInjector\Test\Examples\SomeService;
+use Mockery as m;
 use Mockery\Adapter\Phpunit\MockeryTestCase;
 use Mockery\Mock;
-use Mockery as m;
 
 class BasicTest extends MockeryTestCase
 {
@@ -28,7 +28,7 @@ class BasicTest extends MockeryTestCase
         $factory = new ClassFactory($this->container, AnotherService::class);
         $some = new SomeService();
 
-        self::assertInstanceOf(AnotherService::class, $factory->build($some));
+        self::assertInstanceOf(AnotherService::class, $factory->getInstance($some));
     }
 
     /** @test */
@@ -38,7 +38,7 @@ class BasicTest extends MockeryTestCase
 
         $factory->addArguments(new SomeService());
 
-        self::assertInstanceOf(AnotherService::class, $factory->build());
+        self::assertInstanceOf(AnotherService::class, $factory->getInstance());
     }
 
     /** @test */
@@ -54,7 +54,7 @@ class BasicTest extends MockeryTestCase
             ->with(SomeService::class)
             ->once()->andReturn(new SomeService());
 
-        self::assertInstanceOf(AnotherService::class, $factory->build());
+        self::assertInstanceOf(AnotherService::class, $factory->getInstance());
     }
 
     /** @test */
@@ -64,7 +64,7 @@ class BasicTest extends MockeryTestCase
         $factory->addArguments(new SomeService());
 
         /** @var AnotherService $service */
-        $service = $factory->build('foo', 'bar');
+        $service = $factory->getInstance('foo', 'bar');
 
         self::assertSame(['foo', 'bar'], $service->args);
     }
@@ -76,7 +76,7 @@ class BasicTest extends MockeryTestCase
         $factory->addArguments(new SomeService(), new StringArgument('foo bar'));
 
         /** @var AnotherService $service */
-        $service = $factory->build();
+        $service = $factory->getInstance();
 
         self::assertSame(['foo bar'], $service->args);
     }

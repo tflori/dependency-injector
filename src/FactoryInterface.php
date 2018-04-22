@@ -14,23 +14,11 @@ interface FactoryInterface
     public function __construct(ContainerInterface $container);
 
     /**
-     * Share the created instance
+     * Build the product of this factory and return an instance.
      *
-     * @param bool $share
-     */
-    public function share(bool $share = true);
-
-    /**
-     * Returns weather the instance should be shared or not
-     *
-     * @return bool
-     */
-    public function isShared(): bool;
-
-    /**
-     * Build the product of this factory.
+     * Sharing has to be handled here.
      *
      * @return mixed
      */
-    public function build();
+    public function getInstance();
 }

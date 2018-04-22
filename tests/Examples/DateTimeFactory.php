@@ -42,7 +42,7 @@ class DateTimeFactory implements FactoryInterface
      * @param array $args
      * @return mixed
      */
-    public function build(...$args)
+    public function getInstance(...$args)
     {
         return new \DateTime(...$args);
     }

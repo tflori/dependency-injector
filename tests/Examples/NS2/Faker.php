@@ -2,7 +2,7 @@
 
 namespace DependencyInjector\Test\Examples\NS2;
 
-use DependencyInjector\AbstractFactory;
+use DependencyInjector\Factory\AbstractFactory;
 
 class Faker extends AbstractFactory
 {
@@ -11,7 +11,7 @@ class Faker extends AbstractFactory
      *
      * @return mixed
      */
-    public function build()
+    protected function build()
     {
         return new \DOMDocument();
     }

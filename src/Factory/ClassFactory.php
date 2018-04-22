@@ -1,6 +1,6 @@
 <?php
 
-namespace DependencyInjector;
+namespace DependencyInjector\Factory;
 
 use Psr\Container\ContainerInterface;
 
@@ -38,7 +38,7 @@ class ClassFactory extends AbstractFactory
      * @param array $additionalArgs
      * @return mixed
      */
-    public function build(...$additionalArgs)
+    protected function build(...$additionalArgs)
     {
         $args = [];
 

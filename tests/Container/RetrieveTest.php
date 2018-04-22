@@ -35,6 +35,7 @@ class RetrieveTest extends MockeryTestCase
         $args = [];
         $container->add('foo', function () use (&$args) {
             $args = func_get_args();
+            return 42;
         });
 
         $container->get('foo', 'with', 'some', 'args');
@@ -49,6 +50,7 @@ class RetrieveTest extends MockeryTestCase
         $args = [];
         $container->add('foo', function () use (&$args) {
             $args = func_get_args();
+            return 42;
         })->share();
 
         $container->get('foo', 'with', 'some', 'args');
@@ -63,6 +65,7 @@ class RetrieveTest extends MockeryTestCase
         $calls = 0;
         $container->add('foo', function () use (&$calls) {
             $calls++;
+            return 42;
         })->share();
 
         $container->get('foo');

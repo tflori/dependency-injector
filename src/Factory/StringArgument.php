@@ -1,6 +1,6 @@
 <?php
 
-namespace DependencyInjector;
+namespace DependencyInjector\Factory;
 
 class StringArgument
 {

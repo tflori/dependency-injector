@@ -2,14 +2,14 @@
 
 namespace DependencyInjector\Test\DI;
 
-use DependencyInjector\CallableFactory;
-use DependencyInjector\ClassFactory;
 use DependencyInjector\Container;
 use DependencyInjector\DI;
+use DependencyInjector\Factory\CallableFactory;
+use DependencyInjector\Factory\ClassFactory;
 use DependencyInjector\Test\Examples\DateTimeFactory;
 use DependencyInjector\Test\Examples\SomeService;
-use Mockery\Adapter\Phpunit\MockeryTestCase;
 use Mockery as m;
+use Mockery\Adapter\Phpunit\MockeryTestCase;
 
 class SetTest extends MockeryTestCase
 {

@@ -2,19 +2,15 @@
 
 namespace DependencyInjector;
 
-use DependencyInjector\Exception\NotFound;
+use DependencyInjector\Factory\CallableFactory;
+use DependencyInjector\Factory\ClassFactory;
+use DependencyInjector\Factory\SingletonFactory;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
 class Container implements ContainerInterface
 {
-    /** @var array */
-    protected $instances = [];
-
-    /** @var string[] */
-    protected $aliases = [];
-
     /** @var string[] */
     protected $namespaces = [];
 
@@ -34,24 +30,13 @@ class Container implements ContainerInterface
      */
     public function get($name, ...$args)
     {
-        if (array_key_exists($name, $this->aliases)) {
-            $name = $this->aliases[$name];
-        }
-
-        if (array_key_exists($name, $this->instances)) {
-            return $this->instances[$name];
-        }
-
         if ($factory = $this->resolve($name)) {
-            if ($factory->isShared()) {
-                return $this->instances[$name] = $factory->build();
-            }
             /** @noinspection PhpMethodParametersCountMismatchInspection */
             // a concrete factory could use this arguments
-            return $factory->build(...$args);
+            return $factory->getInstance(...$args);
         }
 
-        throw new NotFound(sprintf('Name %s could not be resolved', $name));
+        throw new NotFoundException(sprintf('Name %s could not be resolved', $name));
     }
 
     /**
@@ -67,17 +52,15 @@ class Container implements ContainerInterface
      */
     public function has($name)
     {
-        if (array_key_exists($name, $this->aliases)) {
-            $name = $this->aliases[$name];
-        }
-
-        if (array_key_exists($name, $this->instances)) {
-            return true;
-        }
-
         return $this->resolve($name) !== null;
     }
 
+    /**
+     * This resolves $name to it's factory.
+     *
+     * @param $name
+     * @return FactoryInterface|null
+     */
     protected function resolve($name): ?FactoryInterface
     {
         if (!isset($this->factories[$name])) {
@@ -106,11 +89,7 @@ class Container implements ContainerInterface
      */
     public function instance(string $name, $instance)
     {
-        if (array_key_exists($name, $this->aliases)) {
-            unset($this->aliases[$name]);
-        }
-
-        $this->instances[$name] = $instance;
+        $this->factories[$name] = new Instance($this, $instance);
     }
 
     /**
@@ -165,7 +144,6 @@ class Container implements ContainerInterface
             throw new Exception('$getter is invalid for dependency. Maybe you want to add an instance instead?');
         }
 
-        $this->delete($name);
         $this->factories[$name] = $factory;
         return $factory;
     }
@@ -183,19 +161,19 @@ class Container implements ContainerInterface
      */
     public function alias(string $origin, string $name)
     {
-        if (array_key_exists($name, $this->instances)) {
-            throw new Exception(sprintf('Instance for %s already exists', $name));
-        }
-
-        if ($this->resolve($name) !== null) {
-            throw new Exception(sprintf('Factory for %s already exists', $name));
+        $factory = $this->resolve($name);
+        if ($factory && !$factory instanceof Alias) {
+            /** @noinspection PhpUnhandledExceptionInspection */
+            // it will not throw class does not exists - we already have an object
+            $reflection = new \ReflectionClass($factory);
+            throw new Exception(sprintf('%s for %s already exists', ($reflection)->getShortName(), $name));
         }
 
         if (!$this->has($origin)) {
             throw new Exception(sprintf('Origin %s could not be resolved', $origin));
         }
 
-        $this->aliases[$name] = $origin;
+        $this->factories[$name] = new Alias($this, $origin);
     }
 
     /**
@@ -205,16 +183,8 @@ class Container implements ContainerInterface
      */
     public function delete(string $name)
     {
-        if (array_key_exists($name, $this->instances)) {
-            unset($this->instances[$name]);
-        }
-
         if (array_key_exists($name, $this->factories)) {
             unset($this->factories[$name]);
-        }
-
-        if (array_key_exists($name, $this->aliases)) {
-            unset($this->aliases[$name]);
         }
     }
 
