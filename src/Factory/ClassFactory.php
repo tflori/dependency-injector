@@ -12,6 +12,9 @@ class ClassFactory extends AbstractFactory
     /** @var array */
     protected $arguments = [];
 
+    /** @var array */
+    protected $methodCalls = [];
+
     public function __construct(ContainerInterface $container, string $class = null)
     {
         parent::__construct($container);
@@ -32,6 +35,12 @@ class ClassFactory extends AbstractFactory
         return $this;
     }
 
+    public function addMethodCall(string $method, ...$args)
+    {
+        array_push($this->methodCalls, [$method, $args]);
+        return $this;
+    }
+
     /**
      * Build the product of this factory.
      *
@@ -40,18 +49,25 @@ class ClassFactory extends AbstractFactory
      */
     protected function build(...$additionalArgs)
     {
-        $args = [];
+        $args = array_map([$this, 'resolveArg'], $this->arguments);
 
-        foreach ($this->arguments as $arg) {
-            if (is_string($arg) && $this->container->has($arg)) {
-                $args[] = $this->container->get($arg);
-            } elseif ($arg instanceof StringArgument) {
-                $args[] = $arg->getString();
-            } else {
-                $args[] = $arg;
-            }
+        $instance = new $this->class(...$args, ...$additionalArgs);
+
+        foreach ($this->methodCalls as $methodCall) {
+            call_user_func_array([$instance, $methodCall[0]], array_map([$this, 'resolveArg'], $methodCall[1]));
         }
 
-        return new $this->class(...$args, ...$additionalArgs);
+        return $instance;
+    }
+
+    protected function resolveArg($arg)
+    {
+        if (is_string($arg) && $this->container->has($arg)) {
+            return $this->container->get($arg);
+        } elseif ($arg instanceof StringArgument) {
+            return $arg->getString();
+        } else {
+            return $arg;
+        }
     }
 }
