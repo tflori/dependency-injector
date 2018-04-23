@@ -23,6 +23,6 @@ class SingletonFactory implements FactoryInterface
      */
     public function getInstance(...$args)
     {
-        return call_user_func([$this->class, 'getInstance']);
+        return call_user_func_array([$this->class, 'getInstance'], $args);
     }
 }

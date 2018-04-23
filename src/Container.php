@@ -2,6 +2,7 @@
 
 namespace DependencyInjector;
 
+use DependencyInjector\Factory\AbstractFactory;
 use DependencyInjector\Factory\CallableFactory;
 use DependencyInjector\Factory\ClassFactory;
 use DependencyInjector\Factory\SingletonFactory;
@@ -17,8 +18,13 @@ class Container implements ContainerInterface
     /** @var FactoryInterface[] */
     protected $factories = [];
 
+    public function __construct()
+    {
+        $this->instance('container', $this);
+    }
+
     /**
-     * Finds an entry of the container by its identifier and returns it.
+     * Finds an entry of the container by $name and returns the instance.
      *
      * @param string $name Identifier of the entry to look for.
      * @param array  $args Any additional arguments for non shared getters
@@ -30,13 +36,10 @@ class Container implements ContainerInterface
      */
     public function get($name, ...$args)
     {
-        if ($factory = $this->resolve($name)) {
-            /** @noinspection PhpMethodParametersCountMismatchInspection */
-            // a concrete factory could use this arguments
-            return $factory->getInstance(...$args);
-        }
-
-        throw new NotFoundException(sprintf('Name %s could not be resolved', $name));
+        $factory = $this->resolve($name);
+        /** @noinspection PhpMethodParametersCountMismatchInspection */
+        // a concrete factory could use this arguments
+        return $factory->getInstance(...$args);
     }
 
     /**
@@ -52,16 +55,24 @@ class Container implements ContainerInterface
      */
     public function has($name)
     {
-        return $this->resolve($name) !== null;
+        try {
+            $this->resolve($name);
+            return true;
+        } catch (NotFoundException $e) {
+            return false;
+        }
     }
 
     /**
-     * This resolves $name to it's factory.
+     * Returns the factory stored for this $name.
+     *
+     * This also searches for FactoryInterfaces in the registered namespaces.
      *
      * @param $name
      * @return FactoryInterface|null
+     * @throws NotFoundException
      */
-    protected function resolve($name): ?FactoryInterface
+    protected function resolve($name): FactoryInterface
     {
         if (!isset($this->factories[$name])) {
             foreach ($this->namespaces as $namespace) {
@@ -78,7 +89,11 @@ class Container implements ContainerInterface
             }
         }
 
-        return $this->factories[$name] ?? null;
+        if (!isset($this->factories[$name])) {
+            throw new NotFoundException(sprintf('Name %s could not be resolved', $name));
+        }
+
+        return $this->factories[$name];
     }
 
     /**
@@ -86,10 +101,11 @@ class Container implements ContainerInterface
      *
      * @param string $name
      * @param mixed  $instance
+     * @return FactoryInterface
      */
-    public function instance(string $name, $instance)
+    public function instance(string $name, $instance): FactoryInterface
     {
-        $this->factories[$name] = new Instance($this, $instance);
+        return $this->factories[$name] = new Instance($this, $instance);
     }
 
     /**
@@ -103,7 +119,9 @@ class Container implements ContainerInterface
     public function share(string $name, $getter): FactoryInterface
     {
         $factory = $this->add($name, $getter);
-        $factory->share();
+        if ($factory instanceof AbstractFactory) {
+            $factory->share();
+        }
         return $factory;
     }
 
@@ -161,12 +179,14 @@ class Container implements ContainerInterface
      */
     public function alias(string $origin, string $name)
     {
-        $factory = $this->resolve($name);
-        if ($factory && !$factory instanceof Alias) {
-            /** @noinspection PhpUnhandledExceptionInspection */
-            // it will not throw class does not exists - we already have an object
-            $reflection = new \ReflectionClass($factory);
-            throw new Exception(sprintf('%s for %s already exists', ($reflection)->getShortName(), $name));
+        if ($this->has($name)) {
+            $factory = $this->resolve($name);
+            if (!$factory instanceof Alias) {
+                /** @noinspection PhpUnhandledExceptionInspection */
+                // it will not throw class does not exists - we already have an object
+                $reflection = new \ReflectionClass($factory);
+                throw new Exception(sprintf('%s for %s already exists', ($reflection)->getShortName(), $name));
+            }
         }
 
         if (!$this->has($origin)) {

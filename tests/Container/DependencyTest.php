@@ -4,6 +4,7 @@ namespace DependencyInjector\Test\Container;
 
 use DependencyInjector\Container;
 use DependencyInjector\Exception;
+use DependencyInjector\Factory\AbstractFactory;
 use DependencyInjector\Factory\CallableFactory;
 use DependencyInjector\Factory\ClassFactory;
 use DependencyInjector\Factory\SingletonFactory;
@@ -146,7 +147,7 @@ class DependencyTest extends MockeryTestCase
     public function shareCallsShareOnTheFactory()
     {
         $container = new Container();
-        $factory = m::mock(DateTimeFactory::class);
+        $factory = m::mock(AbstractFactory::class);
 
         $factory->shouldReceive('share')->once();
 

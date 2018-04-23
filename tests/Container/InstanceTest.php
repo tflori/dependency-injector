@@ -44,4 +44,13 @@ class InstanceTest extends MockeryTestCase
 
         self::assertSame(23, $container->get('bar'));
     }
+
+    /** @test */
+    public function alwaysProvidesAContainerInstance()
+    {
+        $container = new Container();
+
+        self::assertTrue($container->has('container'));
+        self::assertSame($container, $container->get('container'));
+    }
 }

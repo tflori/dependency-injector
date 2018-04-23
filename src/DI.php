@@ -108,8 +108,7 @@ class DI
             (!is_string($getter) || !class_exists($getter)) &&
             !is_callable($getter)
         ) {
-            self::getContainer()->instance($name, $getter);
-            return null;
+            return self::getContainer()->instance($name, $getter);
         }
 
         if ($share) {
@@ -143,7 +142,7 @@ class DI
      * @param mixed  $getter
      * @return FactoryInterface|null
      */
-    public static function share(string $name, $getter): ?FactoryInterface
+    public static function share(string $name, $getter): FactoryInterface
     {
         return self::getContainer()->share($name, $getter);
     }
@@ -155,7 +154,7 @@ class DI
      * @param mixed  $getter
      * @return FactoryInterface|null
      */
-    public static function add(string $name, $getter): ?FactoryInterface
+    public static function add(string $name, $getter): FactoryInterface
     {
         return self::getContainer()->add($name, $getter);
     }

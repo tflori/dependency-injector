@@ -6,6 +6,7 @@ use DependencyInjector\Container;
 use DependencyInjector\DI;
 use DependencyInjector\Factory\CallableFactory;
 use DependencyInjector\Factory\ClassFactory;
+use DependencyInjector\Instance;
 use DependencyInjector\Test\Examples\DateTimeFactory;
 use DependencyInjector\Test\Examples\SomeService;
 use Mockery as m;
@@ -33,7 +34,7 @@ class SetTest extends MockeryTestCase
 
         $this->container->shouldReceive('instance')
             ->with('foo', 'bar')
-            ->once()->andReturn(null);
+            ->once()->andReturn(new Instance($this->container, 'bar'));
 
         DI::set('foo', 'bar');
     }
@@ -95,14 +96,16 @@ class SetTest extends MockeryTestCase
     public function allowsArrayInSetAndReturnsFactories()
     {
         DI::setContainer($this->container);
+        $instance1 = new Instance($this->container, '');
+        $instance2 = new Instance($this->container, '');
         $factory = new DateTimeFactory($this->container);
 
         $this->container->shouldReceive('instance')
             ->with('foo', 42)
-            ->once()->andReturn(null);
+            ->once()->andReturn($instance1);
         $this->container->shouldReceive('instance')
             ->with('bar', m::type(\Closure::class))
-            ->once()->andReturn(null);
+            ->once()->andReturn($instance2);
         $this->container->shouldReceive('share')
             ->with('dt', DateTimeFactory::class)
             ->once()->andReturn($factory);
@@ -116,8 +119,8 @@ class SetTest extends MockeryTestCase
         ]);
 
         self::assertSame([
-            'foo' => null,
-            'bar' => null,
+            'foo' => $instance1,
+            'bar' => $instance2,
             'dt' => $factory,
         ], $factories);
     }

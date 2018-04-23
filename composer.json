@@ -24,7 +24,7 @@
     "coverage": "phpunit --coverage-text"
   },
   "require": {
-    "php": "^7.1",
+    "php": "^7.0",
     "psr/container": "^1.0"
   },
   "require-dev": {
