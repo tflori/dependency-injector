@@ -27,7 +27,7 @@ When creating an object of that class you can provide the `DatabaseConnection` t
 `new MyService(new DatabaseConnection)`. In the tests you can then pass a mock
 `new MyService(m::mock(DatabaseConnection::class))`.
 
-That would mean that everywhere in your application where you create an object of this class you have to now where your
+That would mean that everywhere in your application where you create an object of this class you have to know where your
 `DatabaseConnection` object is stored or create a new one. It's even more worse: when the interface for the class 
 changes (for example an additional dependency get added) you will have to change this everywhere in your code.
 
@@ -57,11 +57,10 @@ DI::add('myService', function () {
 });
 ```
 
-- ** *1 ** Some people say this is hiding the dependencies and is an anti pattern called `Service Locator`. Don't trust
-  them. It's still clear what are the dependencies (you just have to search for them) and it could be easier to write.
-  But the most crucial change is that the instance gets created without the need of this instance. Assume you may need
-  a `DatabaseConnection` only if the cache does not already store the result - such things can have a huge impact when
-  we are talking about large amounts of users.
+- **&ast;<sup>1</sup>** Some people say this is hiding the dependencies and is an anti pattern called `Service Locator`. Don't trust them. It's still clear what are the dependencies (you just have to search for them) and it could be easier
+  to write. But the most crucial change is that the instance gets created without the need of this instance. Assume you
+  may need a `DatabaseConnection` only if the cache does not already store the result - such things can have a huge
+  impact when we are talking about large amounts of users.
   
 ### Tests
 
