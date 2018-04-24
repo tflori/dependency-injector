@@ -2,10 +2,10 @@
 
 namespace DependencyInjector\Factory;
 
-use DependencyInjector\FactoryInterface;
+use DependencyInjector\SharableFactoryInterface;
 use Psr\Container\ContainerInterface;
 
-abstract class AbstractFactory implements FactoryInterface
+abstract class AbstractFactory implements SharableFactoryInterface
 {
     /** @var ContainerInterface */
     protected $container;

@@ -34,6 +34,7 @@ changes (for example an additional dependency get added) you will have to change
 Here comes the dependency injection into play. Here with the most strait forward and understandable way (a callback):
 
 ```php
+<?php
 $container->share('databaseConnection', function () {
     return new DatabaseConnection();
 });
@@ -44,11 +45,12 @@ $container->add('myService', function () use ($container) {
 
 ### Make the container available
 
-The container could also be available from within the class<sup>[*1]</sup>. This library provides a class with only
+The container could also be available from within the class &ast;<sup>1</sup>. This library provides a class with only
 static methods `DI` to make the dependencies available from everywhere. It is using the same interface but with static
 calls. The above example could look like this:
 
 ```php
+<?php
 DI::share('databaseConnection', function () {
     return new DatabaseConnection();
 });
@@ -57,16 +59,12 @@ DI::add('myService', function () {
 });
 ```
 
-- **&ast;<sup>1</sup>** Some people say this is hiding the dependencies and is an anti pattern called `Service Locator`. Don't trust them. It's still clear what are the dependencies (you just have to search for them) and it could be easier
-  to write. But the most crucial change is that the instance gets created without the need of this instance. Assume you
-  may need a `DatabaseConnection` only if the cache does not already store the result - such things can have a huge
-  impact when we are talking about large amounts of users.
-  
 ### Tests
 
 Now when we want to test the class we can just replace the dependency for database connection:
 
 ```php
+<?php
 DI::share('databaseConnection', function () {
     return m::mock(DatabaseConnection::class);
 });
@@ -75,17 +73,81 @@ DI::get('databaseConnection')->shouldReceive('query');
 // ...
 ```
 
-## Examples
+This works in both versions &ast;<sup>2</sup> and can safely be used for testing.
 
-For examples with tests have a look at the source: tests/examples.
+## Advanced usage
+
+We can not only store callbacks that are executed when a new instance is required. There are some other practical ways
+that makes it easier for you to define how dependencies should be resolved.
+
+### Define instances
+
+Instances can be defined to be returned when a dependency is requested. Keep in mind that you will have to instantiate
+a class before using it what might have an impact in performance. Anyway this gives you an opportunity to also define
+several values for example a very simple configuration:
+
+```php
+<?php
+$container->instance('config', (object)[
+    'database' => (object)[
+        'dsn' => 'mysql://whatever',
+        'user' => 'john',
+        'password' => 'does_secret',
+    ]
+]);
+```
+
+### Define aliases
+
+Aliases allow you to have several names for a dependency. First define the dependency and than alias it:
+
+```php
+<?php
+$container->share(Config::class, Config::class);
+$container->alias(Config::class, 'config');
+$container->alias(Config::class, 'cfg'); 
+```
+
+### Factories
+
+The resolving of a dependency is done by an instance of a `FactoryInterface`. You can write your own factories or use
+the existing factory implementations:
+
+- `CallableFactory` A factory that calls a callable to get the instance (or value)
+- `ClassFactory` This factory creates a instance of the given class (with arguments and method calls)
+- `SingletonFactory` Singleton classes can be passed through the container to provide mocks instead
+- `Instance` This is a pseudo factory that just holds a instance (or value)
+- `Alias` The second pseudo factory that just requests another dependency
+
+#### Own factories
+
+When you write own factories you will have to implement `FactoryInterface` or `SharableFactoryInterface`. The
+`AbstractFactory` implements `SharableFactoryInterface` and can be extended to your needs in a very simple way:
+
+```php
+<?php
+class DatabaseFactory extends \DependencyInjector\Factory\AbstractFactory
+{
+    protected $shared = true; // false is default - so simple omit it for non shared factories or use share to define
+    
+    protected function build()
+    {
+        $dbConfig = $this->container->get('config')->database;
+        return new PDO($dbConfig->dsn, $dbConfig->user, $dbConfig->password);
+    }
+}
+```
+
+Own factories can be defined be used for resolving dependencies by `Container::add()` or `Container::share()`
+
+## Examples
 
 Here are some small examples for basic usage.
 
 ### The `Config`
 ```php
 <?php
-
-use DependencyInjector\DI;
+$container = new \DependencyInjector\Container();
 
 class Config {
     private static $_instance;
@@ -111,7 +173,9 @@ class Config {
     }
 }
 
-DI::set('config', function() { return Config::getInstance(); });
+$container->add('config', Config::class); // adds a SingletonFactory
+
+DI::setContainer($container);
 
 function someStaticFunction() {
     // before
@@ -179,3 +243,11 @@ class ApplicationTest extends PHPUnit_Framework_TestCase {
     }
 }
 ```
+
+- **&ast;<sup>1</sup>** Some people say this is hiding the dependencies and is an anti pattern called `Service Locator`. Don't trust them. It's still clear what are the dependencies (you just have to search for them) and it could be easier
+  to write. But the most crucial difference is that otherwise the instance gets created without a requirement. Assume
+  you may need a `DatabaseConnection` only if the cache does not already store the result - such things can have a huge
+  impact when we are talking about large amounts of users.
+  
+- **&ast;<sup>2</sup>** In [the meta document](https://www.php-fig.org/psr/psr-11/meta/) for PSR-11 they mention that
+  it is harder to test when you pass the container to your objects. But - as we can see - it's not.

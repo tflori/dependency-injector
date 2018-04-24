@@ -119,7 +119,7 @@ class Container implements ContainerInterface
     public function share(string $name, $getter): FactoryInterface
     {
         $factory = $this->add($name, $getter);
-        if ($factory instanceof AbstractFactory) {
+        if ($factory instanceof SharableFactoryInterface) {
             $factory->share();
         }
         return $factory;
