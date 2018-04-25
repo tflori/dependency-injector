@@ -11,7 +11,8 @@ containers ([PSR-11](https://www.php-fig.org/psr/psr-11/)).
  
 ## What is a dependency
 
-Something that your application needs to work correct. For example an instance of `Calculator` or `Config`.
+Something that your application needs to work correct. For example an instance of `Calculator` or `Config` or an object
+that implements `CacheInterface`.
 
 ## Basic usage
 
@@ -97,6 +98,8 @@ $container->instance('config', (object)[
 ]);
 ```
 
+> Do not misuse this as a global storage. You will get naming conflicts and we will not provide solutions for it.
+
 ### Define aliases
 
 Aliases allow you to have several names for a dependency. First define the dependency and than alias it:
@@ -108,17 +111,25 @@ $container->alias(Config::class, 'config');
 $container->alias(Config::class, 'cfg'); 
 ```
 
-### Factories
+### Define dependencies
 
-The resolving of a dependency is done by an instance of a `FactoryInterface`. You can write your own factories or use
-the existing factory implementations:
+Dependencies that are built when they are requested can be added using `Container::add(string $name, $getter)`. The
+getter can be a callable (such as closures - what we did above), a class name of a factory, an instance of a factory or
+any other class name.
 
-- `CallableFactory` A factory that calls a callable to get the instance (or value)
-- `ClassFactory` This factory creates a instance of the given class (with arguments and method calls)
-- `SingletonFactory` Singleton classes can be passed through the container to provide mocks instead
-- `Instance` This is a pseudo factory that just holds a instance (or value)
-- `Alias` The second pseudo factory that just requests another dependency
+> Factory here means a class that implements `FactoryInterface` or `SharableFactoryInterface`.
 
+`Container:add()` will return the factory that got added and which factory get added is defined as:
+
+- An instance of a factory: the given factory
+- A class name of a factory: a new object of the given class
+- A class name of a class using singleton pattern: a `SingletonFactory`
+- Any other class name: a `ClassFactory`
+- A callable: a `CallableFactory`
+
+Dependencies using factories implementing `SharableFactoryInterface` can be shared by calling `$factory->share()` or
+using the shortcut `Container::share(string $name, $getter)`. 
+ 
 #### Own factories
 
 When you write own factories you will have to implement `FactoryInterface` or `SharableFactoryInterface`. The
@@ -137,8 +148,6 @@ class DatabaseFactory extends \DependencyInjector\Factory\AbstractFactory
     }
 }
 ```
-
-Own factories can be defined be used for resolving dependencies by `Container::add()` or `Container::share()`
 
 ## Examples
 
