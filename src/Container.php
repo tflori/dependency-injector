@@ -43,6 +43,27 @@ class Container implements ContainerInterface
     }
 
     /**
+     * @param string $name
+     * @return mixed
+     * @codeCoverageIgnore Just an alias for get
+     */
+    public function __get($name)
+    {
+        return $this->get($name);
+    }
+
+    /**
+     * @param string $name
+     * @param array $args
+     * @return mixed
+     * @codeCoverageIgnore Just an alias for get
+     */
+    public function __call($name, $args)
+    {
+        return $this->get($name, ...$args);
+    }
+
+    /**
      * Returns true if the container can return an entry for the given identifier.
      * Returns false otherwise.
      *
@@ -61,6 +82,16 @@ class Container implements ContainerInterface
         } catch (NotFoundException $e) {
             return false;
         }
+    }
+
+    /**
+     * @param string $name
+     * @return bool
+     * @codeCoverageIgnore Just an alias for has
+     */
+    public function __isset($name)
+    {
+        return $this->has($name);
     }
 
     /**

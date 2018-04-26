@@ -21,19 +21,6 @@ class DI
     protected static $container;
 
     /**
-     * Alias for DI::get($name). Example:
-     * DI::get('db') === DI::db()
-     *
-     * @param string $name
-     * @param array  $args
-     * @return mixed
-     */
-    public static function __callStatic($name, $args)
-    {
-        return self::getContainer()->get($name, ...$args);
-    }
-
-    /**
      * Finds an entry of the container by its identifier and returns it.
      *
      * @param string $name Identifier of the entry to look for.
@@ -45,6 +32,17 @@ class DI
      * @return mixed Entry.
      */
     public static function get(string $name, ...$args)
+    {
+        return self::getContainer()->get($name, ...$args);
+    }
+
+    /**
+     * @param string $name
+     * @param array  $args
+     * @return mixed
+     * @codeCoverageIgnore Just an alias for get
+     */
+    public static function __callStatic($name, $args)
     {
         return self::getContainer()->get($name, ...$args);
     }

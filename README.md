@@ -9,12 +9,12 @@
 A simple and lightweight dependency injector. Compatible to php standard recommendation for dependency injection 
 containers ([PSR-11](https://www.php-fig.org/psr/psr-11/)).
  
-## What is a dependency
+## What Is A Dependency
 
 Something that your application needs to work correct. For example an instance of `Calculator` or `Config` or an object
 that implements `CacheInterface`.
 
-## Basic usage
+## Basic Usage
 
 One of the biggest problems in software development is the tight coupling of dependencies. Imagine a class that creates
 a instance from `DatabaseConnection` with `new DatabaseConnection()`. This is called a tight coupling - it is so tight
@@ -22,7 +22,7 @@ that you would have to overwrite your autoloader (what is not always possible) t
 
 There are two solutions to test this class without the need to have a database connection during the tests.
 
-### Passing the dependency
+### Passing The Dependency
 
 When creating an object of that class you can provide the `DatabaseConnection` to the constructor. For example
 `new MyService(new DatabaseConnection)`. In the tests you can then pass a mock
@@ -44,7 +44,7 @@ $container->add('myService', function () use ($container) {
 });
 ```
 
-### Make the container available
+### Make The Container Available
 
 The container could also be available from within the class &ast;<sup>1</sup>. This library provides a class with only
 static methods `DI` to make the dependencies available from everywhere. It is using the same interface but with static
@@ -76,12 +76,12 @@ DI::get('databaseConnection')->shouldReceive('query');
 
 This works in both versions &ast;<sup>2</sup> and can safely be used for testing.
 
-## Advanced usage
+## Advanced Usage
 
 We can not only store callbacks that are executed when a new instance is required. There are some other practical ways
 that makes it easier for you to define how dependencies should be resolved.
 
-### Define instances
+### Define Instances
 
 Instances can be defined to be returned when a dependency is requested. Keep in mind that you will have to instantiate
 a class before using it what might have an impact in performance. Anyway this gives you an opportunity to also define
@@ -100,7 +100,7 @@ $container->instance('config', (object)[
 
 > Do not misuse this as a global storage. You will get naming conflicts and we will not provide solutions for it.
 
-### Define aliases
+### Define Aliases
 
 Aliases allow you to have several names for a dependency. First define the dependency and than alias it:
 
@@ -111,7 +111,7 @@ $container->alias(Config::class, 'config');
 $container->alias(Config::class, 'cfg'); 
 ```
 
-### Define dependencies
+### Define Dependencies
 
 Dependencies that are built when they are requested can be added using `Container::add(string $name, $getter)`. The
 getter can be a callable (such as closures - what we did above), a class name of a factory, an instance of a factory or
@@ -129,6 +129,49 @@ any other class name.
 
 Dependencies using factories implementing `SharableFactoryInterface` can be shared by calling `$factory->share()` or
 using the shortcut `Container::share(string $name, $getter)`. 
+ 
+#### Class Factory
+
+The `ClassFactory` creates only an instance without any arguments by default. It also allows to pass different arguments
+to the constructor and that is the usual way suggested from PSR-11:
+
+```php
+<?php
+// pass some statics
+DI::share('session', Session::class)
+    ->addArguments('app-name', 3600, true);
+new Session(DI::has('app-name') ? DI::get('app-name') : 'app-name', 3600, true);
+
+// pass dependencies
+DI::share('database', Connection::class)
+    ->addArguments('config');
+new Connection(DI::has('config') ? DI::get('config') : 'config');
+
+// pass a string that is defined as dependency
+DI::add('view', View::class)
+    ->addArguments(new StringArgument('default-layout'));
+new View('default-layout');
+```
+
+It is also possible to call methods on the new instance:
+
+```php
+<?php
+DI::share('cache', Redis::class)
+    ->addMethodCall('connect', 'localhost', 4321, 1);
+
+// you can also bypass resolving the dependency
+DI::add('view', View::class)
+    ->addMethodCall('setView', new StringArgument('default-view'));
+```
+
+### Singleton Factory
+
+_describe me please_
+
+### Callable Factory
+
+_describe me please_
  
 #### Own factories
 
@@ -149,15 +192,21 @@ class DatabaseFactory extends \DependencyInjector\Factory\AbstractFactory
 }
 ```
 
+Factories can be defined for dependencies using `Container::add()` or `Container::share()` as described above. But you
+can also register the namespace where your factories are defined and the container will try to find the factory for
+the requested dependency. When you request a dependency and it is not already defined it will check each registered
+namespace for a class named `$namespace . '\\' . ucfirst($dependency) . $suffix`.  
+
 ## Examples
 
-Here are some small examples for basic usage.
+Here are some small examples how you could use this library.
 
-### The `Config`
+> We are using here the static methods from DI - you can do this with the container too.
+
+### The Configuration
+
 ```php
 <?php
-$container = new \DependencyInjector\Container();
-
 class Config {
     private static $_instance;
     
@@ -182,9 +231,7 @@ class Config {
     }
 }
 
-$container->add('config', Config::class); // adds a SingletonFactory
-
-DI::setContainer($container);
+DI::add('config', Config::class); // adds a SingletonFactory
 
 function someStaticFunction() {
     // before
@@ -193,25 +240,18 @@ function someStaticFunction() {
     }
     
     // now
-    if (empty(DI::config()->database['host'])) {
-        throw new Exception('No database host configured');
-    }
-    
-    // or if you prefer
     if (empty(DI::get('config')->database['host'])) {
         throw new Exception('No database host configured');
     }
 }
 ```
 
-### The database connection
+### The Database Connection
+
 ```php
 <?php
-
-use DependencyInjector\DI;
-
 DI::set('database', function() {
-    $dbConfig = DI::config()->database;
+    $dbConfig = DI::get('config')->database;
     
     $mysql = new mysqli($dbConfig['host'], $dbConfig['user'], $dbConfig['password'], $dbConfig['database']);
     
@@ -227,31 +267,64 @@ function someStaticFunction() {
     $mysql = MyApp::getDatabaseConnection();
     
     // now
-    $mysql = DI::database();
+    $mysql = DI::get('database');
     
     $mysql->query('SELECT * FROM table');
 }
 ```
 
 The problem before: you can not mock the static function `MyApp::getDatabaseConnection()`. You also can not mock the 
-static function `DI::database()` or `DI::get('database')`. But you can set the dependency to return a mock object:
+static function `DI::get('database')`. But you can set the dependency to return a mock object:
 
 ```php
 <?php
-
-use DependencyInjector\DI;
-
-class ApplicationTest extends PHPUnit_Framework_TestCase {
+class ApplicationTest extends TestCase {
     public function testSomeStaticFunction() {
+        // prepare the mock
         $mock = $this->getMock(mysqli::class);
         $mock->expects($this->once())->method('query')
             ->with('SELECT * FROM table');
-        DI::set('database', $mock);
+        
+        // overwrite the dependency
+        DI::instance('database', $mock);
             
         someStaticFunction();
     }
 }
 ```
+
+## Tips
+
+### Extend The DI Class
+
+When you are using the `DI` class it makes sense to extend this class and add annotations for the `__callStatic()` getter
+so that your IDE knows what comes back from your `DI`:
+
+```php
+<?php
+/**
+ * @method static Config config()
+ * @method static mysqli database() 
+ */
+class DI extends \DependencyInjector\DI {}
+``` 
+
+### Extend The Container Class
+
+Similar functionality exists for `Container`. The magic method `__isset()` aliases `Container::has()`, `__get()` aliases
+`Container::get($name)` and `__call()` aliases `Container::get($name, ...$args)`. So you can annotate your container
+like this:
+
+```php
+<?php
+/** 
+ * @property Config config
+ * @method Config config()
+ */
+class Container extends \DependencyInjector\Container {}
+```
+
+## Comments
 
 - **&ast;<sup>1</sup>** Some people say this is hiding the dependencies and is an anti pattern called `Service Locator`. Don't trust them. It's still clear what are the dependencies (you just have to search for them) and it could be easier
   to write. But the most crucial difference is that otherwise the instance gets created without a requirement. Assume
