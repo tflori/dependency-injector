@@ -80,4 +80,15 @@ class BasicTest extends MockeryTestCase
 
         self::assertSame(['foo bar'], $service->args);
     }
+
+    /** @test */
+    public function doesNotPassAdditionalArgumentsOnSharedFactories()
+    {
+        $factory = new ClassFactory($this->container, AnotherService::class);
+        $factory->share();
+
+        self::expectException(\TypeError::class);
+
+        $factory->getInstance(new SomeService());
+    }
 }

@@ -76,6 +76,8 @@ DI::get('databaseConnection')->shouldReceive('query');
 
 This works in both versions &ast;<sup>2</sup> and can safely be used for testing.
 
+> We are using here the static methods from DI in the rest of the document.
+
 ## Advanced Usage
 
 We can not only store callbacks that are executed when a new instance is required. There are some other practical ways
@@ -89,7 +91,7 @@ several values for example a very simple configuration:
 
 ```php
 <?php
-$container->instance('config', (object)[
+DI::instance('config', (object)[
     'database' => (object)[
         'dsn' => 'mysql://whatever',
         'user' => 'john',
@@ -106,9 +108,9 @@ Aliases allow you to have several names for a dependency. First define the depen
 
 ```php
 <?php
-$container->share(Config::class, Config::class);
-$container->alias(Config::class, 'config');
-$container->alias(Config::class, 'cfg'); 
+DI::share(Config::class, Config::class);
+DI::alias(Config::class, 'config');
+DI::alias(Config::class, 'cfg'); 
 ```
 
 ### Define Dependencies
@@ -165,13 +167,51 @@ DI::add('view', View::class)
     ->addMethodCall('setView', new StringArgument('default-view'));
 ```
 
+Non shared classes allow to pass additional arguments to the constructor:
+
+```php
+<?php
+DI::add('view', View::class);
+$view = DI::get('view', 'login');
+new View('login');
+```
+
 ### Singleton Factory
 
-_describe me please_
+The `SingletonFactory` is a special factory that just wraps the call to `::getInstance()`. The advantage here is that
+you don't have to create the instance if you don't need to or create a mock object for tests. Without this factory you
+can either pass an instance of the class or stick with the call to `::getInstance()` in your code.
+
+This factory also allows pass arguments to the `::getInstance()` method for classes that store different instances for
+specific arguments.
+
+```php
+<?php
+DI::add('calculator', Calculator::class);
+
+DI::get('calculator', 'rad');
+Calculator::getInstance('rad');
+
+DI::get('calculator', 'deg');
+Calculator::getInstance('deg');
+```
 
 ### Callable Factory
 
-_describe me please_
+This factory is just calling the passed callback. The callback only have to be callable what is checked with 
+`is_callable($getter)` - so you can also pass an array with class or instance and method name.
+
+```php
+<?php
+DI::share('database', function() {
+    $config = DI::get('config');
+    return new PDO($config->database->dsn, $config->database->username, $config->database->password);
+});
+```
+
+> Because the callback could also be a static method from a class with `[Calculator::class, 'getInstance']`. It is also
+> possible to use this for Singleton classes. The difference is that this could be shared but the `SingletonFactory`
+> always calls `::getInstance()` what is the preferred method from our point of view.
  
 #### Own factories
 
@@ -200,8 +240,6 @@ namespace for a class named `$namespace . '\\' . ucfirst($dependency) . $suffix`
 ## Examples
 
 Here are some small examples how you could use this library.
-
-> We are using here the static methods from DI - you can do this with the container too.
 
 ### The Configuration
 
