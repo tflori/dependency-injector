@@ -2,125 +2,126 @@
 
 namespace DependencyInjector\Test\DI;
 
+use DependencyInjector\Container;
 use DependencyInjector\DI;
-use DependencyInjector\Test\example\DataProvider\DatabaseObject;
-use DependencyInjector\Test\example\Factory\Cache;
-use DependencyInjector\Test\example\Singleton\MySingleton;
-use PHPUnit\Framework\TestCase;
+use DependencyInjector\Factory\CallableFactory;
+use DependencyInjector\Factory\ClassFactory;
+use DependencyInjector\Instance;
+use DependencyInjector\Test\Examples\DateTimeFactory;
+use DependencyInjector\Test\Examples\SomeService;
+use Mockery as m;
+use Mockery\Adapter\Phpunit\MockeryTestCase;
 
-class SetTest extends TestCase
+class SetTest extends MockeryTestCase
 {
-    /** Test that DI::set() stores something.
-     * @test */
-    public function storesSomethingNotCallable()
+    /** @var Container|m\Mock */
+    protected $container;
+
+    protected function setUp()
     {
-        $something = [$this, 'nonExistingMethod'];
+        $this->container = m::mock(Container::class);
+    }
 
-        DI::set('something', $something);
-
-        self::assertEquals($something, DI::get('something'));
+    protected function tearDown()
+    {
+        DI::reset();
     }
 
     /** @test */
-    public function storesValue()
+    public function stringsAreInstances()
     {
-        $something = [$this, 'getDependencyExample'];
-        DI::set('array', $something, false, true);
+        DI::setContainer($this->container);
 
-        $result = DI::get('array');
+        $this->container->shouldReceive('instance')
+            ->with('foo', 'bar')
+            ->once()->andReturn(new Instance($this->container, 'bar'));
 
-        self::assertSame($something, $result);
-    }
-
-    /** Test that the function got not executed before get.
-     * @test */
-    public function doesNotExecute()
-    {
-        $calls = 0;
-
-        DI::set('dontCall', function () use (&$calls) {
-            $calls = $calls + 1;
-        });
-
-        self::assertSame(0, $calls);
-    }
-
-    /** Test that DI::set() overrides created instances.
-     * @test */
-    public function overridesInstances()
-    {
-        DI::set('microtime', function () {
-            return microtime(true);
-        });
-        $result1 = DI::get('microtime');
-
-        DI::set('microtime', function () {
-            return microtime(true);
-        });
-        $result2 = DI::get('microtime');
-
-        self::assertNotSame($result1, $result2);
+        DI::set('foo', 'bar');
     }
 
     /** @test */
-    public function acceptsClassNames()
+    public function classNamesGetShared()
     {
-        DI::set('dbo', DatabaseObject::class);
+        DI::setContainer($this->container);
 
-        $dbo = DI::get('dbo');
+        $this->container->shouldReceive('share')
+            ->with('service', SomeService::class)
+            ->once()->andReturn(new ClassFactory($this->container, SomeService::class));
 
-        self::assertInstanceOf(DatabaseObject::class, $dbo);
+        DI::set('service', SomeService::class);
     }
 
     /** @test */
-    public function acceptsFactories()
+    public function factoriesGetShared()
     {
-        DI::set('memcache', Cache::class);
+        DI::setContainer($this->container);
+        $factory = new DateTimeFactory($this->container);
 
-        $memcache = DI::get('memcache');
+        $this->container->shouldReceive('share')
+            ->with('dt', $factory)
+            ->once()->andReturn($factory);
 
-        self::assertRegExp('/^' . preg_quote(Cache::class) . '#\d+$/', $memcache);
+        DI::set('dt', $factory);
     }
 
     /** @test */
-    public function usesGetInstanceOnSingletons()
+    public function callablesGetShared()
     {
-        DI::set('singleton', MySingleton::class);
+        DI::setContainer($this->container);
+        $closure = function () {
+            return 23;
+        };
 
-        $singleton = DI::get('singleton');
+        $this->container->shouldReceive('share')
+            ->with('foo', $closure)
+            ->once()->andReturn(new CallableFactory($this->container, $closure));
 
-        self::assertInstanceOf(MySingleton::class, $singleton);
+        DI::set('foo', $closure);
     }
 
     /** @test */
-    public function acceptsArrays()
+    public function sharingCanBeDisabled()
     {
-        DI::set([
-            'dbo' => DatabaseObject::class,
-            'dbo_class' => [DatabaseObject::class, true, true]
+        DI::setContainer($this->container);
+        $factory = new DateTimeFactory($this->container);
+
+        $this->container->shouldReceive('add')
+            ->with('dt', $factory)
+            ->once()->andReturn($factory);
+
+        DI::set('dt', $factory, false);
+    }
+
+    /** @test */
+    public function allowsArrayInSetAndReturnsFactories()
+    {
+        DI::setContainer($this->container);
+        $instance1 = new Instance($this->container, '');
+        $instance2 = new Instance($this->container, '');
+        $factory = new DateTimeFactory($this->container);
+
+        $this->container->shouldReceive('instance')
+            ->with('foo', 42)
+            ->once()->andReturn($instance1);
+        $this->container->shouldReceive('instance')
+            ->with('bar', m::type(\Closure::class))
+            ->once()->andReturn($instance2);
+        $this->container->shouldReceive('share')
+            ->with('dt', DateTimeFactory::class)
+            ->once()->andReturn($factory);
+
+        $factories = DI::set([
+            'foo' => 42,
+            'bar' => [function () {
+                return 23;
+            }, true, true],
+            'dt' => DateTimeFactory::class,
         ]);
 
-        $dbo = DI::get('dbo');
-        $class = DI::get('dbo_class');
-
-        self::assertInstanceOf(DatabaseObject::class, $dbo);
-        self::assertSame(DatabaseObject::class, $class);
-    }
-
-    /** @test */
-    public function arraysWithStaticCallables()
-    {
-        DI::set([
-            'fb' => [__CLASS__, 'initDependency'],
-        ]);
-
-        $result = DI::get('fb');
-
-        self::assertSame('foobar', $result);
-    }
-
-    public static function initDependency()
-    {
-        return 'foobar';
+        self::assertSame([
+            'foo' => $instance1,
+            'bar' => $instance2,
+            'dt' => $factory,
+        ], $factories);
     }
 }

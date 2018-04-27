@@ -2,6 +2,8 @@
 
 namespace DependencyInjector;
 
-class Exception extends \Exception
+use Psr\Container\ContainerExceptionInterface;
+
+class Exception extends \Exception implements ContainerExceptionInterface
 {
 }
