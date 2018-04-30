@@ -2,7 +2,6 @@
 
 namespace DependencyInjector;
 
-use DependencyInjector\Factory\AbstractFactory;
 use DependencyInjector\Factory\CallableFactory;
 use DependencyInjector\Factory\ClassFactory;
 use DependencyInjector\Factory\SingletonFactory;
@@ -37,9 +36,13 @@ class Container implements ContainerInterface
     public function get($name, ...$args)
     {
         $factory = $this->resolve($name);
-        /** @noinspection PhpMethodParametersCountMismatchInspection */
-        // a concrete factory could use this arguments
-        return $factory->getInstance(...$args);
+        try {
+            /** @noinspection PhpMethodParametersCountMismatchInspection */
+            // a concrete factory could use this arguments
+            return $factory->getInstance(...$args);
+        } catch (\Throwable $t) {
+            throw new Exception('Unexpected exception while resolving ' . $name, 0, $t);
+        }
     }
 
     /**
@@ -121,7 +124,7 @@ class Container implements ContainerInterface
         }
 
         if (!isset($this->factories[$name])) {
-            throw new NotFoundException(sprintf('Name %s could not be resolved', $name));
+            throw new NotFoundException('Name ' . $name . ' could not be resolved');
         }
 
         return $this->factories[$name];
@@ -144,7 +147,7 @@ class Container implements ContainerInterface
      *
      * @param string $name
      * @param mixed  $getter
-     * @return FactoryInterface
+     * @return FactoryInterface|SharableFactoryInterface
      * @throws ContainerExceptionInterface
      */
     public function share(string $name, $getter): FactoryInterface
@@ -163,7 +166,7 @@ class Container implements ContainerInterface
      *
      * @param string $name
      * @param mixed  $getter
-     * @return FactoryInterface
+     * @return FactoryInterface|SharableFactoryInterface
      * @throws ContainerExceptionInterface
      */
     public function add(string $name, $getter): FactoryInterface
@@ -221,7 +224,7 @@ class Container implements ContainerInterface
         }
 
         if (!$this->has($origin)) {
-            throw new Exception(sprintf('Origin %s could not be resolved', $origin));
+            throw new Exception('Origin ' . $origin . ' could not be resolved');
         }
 
         $this->factories[$name] = new Alias($this, $origin);

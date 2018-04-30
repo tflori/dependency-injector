@@ -4,7 +4,6 @@ namespace DependencyInjector\Test\Container;
 
 use DependencyInjector\Container;
 use DependencyInjector\Exception;
-use DependencyInjector\Test\Examples;
 use Mockery\Adapter\Phpunit\MockeryTestCase;
 
 class AliasTest extends MockeryTestCase
@@ -25,7 +24,7 @@ class AliasTest extends MockeryTestCase
     public function storesAnAliasForFactory()
     {
         $container = new Container();
-        $container->registerNamespace(Examples::class, 'Factory');
+        $container->registerNamespace('DependencyInjector\Test\Examples', 'Factory');
 
         $container->alias('dateTime', 'foo');
 
@@ -51,7 +50,7 @@ class AliasTest extends MockeryTestCase
     {
         $container = new Container();
         $container->instance('foo', 'John Doe');
-        $container->registerNamespace(Examples::class, 'Factory');
+        $container->registerNamespace('DependencyInjector\Test\Examples', 'Factory');
 
         self::expectException(Exception::class);
         self::expectExceptionMessage('Factory for dateTime already exists');

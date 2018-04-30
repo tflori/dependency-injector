@@ -4,7 +4,6 @@ namespace DependencyInjector\Test\DI;
 
 use DependencyInjector\Container;
 use DependencyInjector\DI;
-use DependencyInjector\Test\Examples\DateTimeFactory;
 use Mockery as m;
 use Mockery\Adapter\Phpunit\MockeryTestCase;
 
@@ -171,6 +170,7 @@ class ContainerTest extends MockeryTestCase
             ->with('foo')
             ->once()->andReturn('bar');
 
+        /** @noinspection PhpUndefinedMethodInspection */
         self::assertSame('bar', DI::foo());
     }
 }

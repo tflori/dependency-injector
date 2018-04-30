@@ -157,6 +157,7 @@ class DependencyTest extends MockeryTestCase
     /** @test */
     public function shareUsesAddAndReturnsFactory()
     {
+        /** @var m\Mock|Container $container */
         $container = m::mock(Container::class)->makePartial();
 
         $container->shouldReceive('add')

@@ -3,8 +3,8 @@
 namespace DependencyInjector\Test\Container;
 
 use DependencyInjector\Container;
-use DependencyInjector\Test\Examples\DateTimeFactory;
 use Mockery\Adapter\Phpunit\MockeryTestCase;
+use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
 class RetrieveTest extends MockeryTestCase
@@ -63,14 +63,35 @@ class RetrieveTest extends MockeryTestCase
     {
         $container = new Container();
         $calls = 0;
-        $container->add('foo', function () use (&$calls) {
+        $container->share('foo', function () use (&$calls) {
             $calls++;
             return 42;
-        })->share();
+        });
 
         $container->get('foo');
         $container->get('foo');
 
         self::assertSame(1, $calls);
+    }
+
+    /** @test */
+    public function catchesAnyExceptionAndThrowsContainerExceptionInstead()
+    {
+        $container = new Container();
+        $exception = new \InvalidArgumentException('everything is wrong');
+        $container->add('foo', function () use ($exception) {
+            throw $exception;
+        });
+
+        self::expectException(ContainerExceptionInterface::class);
+        self::expectExceptionMessage('Unexpected exception while resolving foo');
+
+        try {
+            $container->get('foo');
+        } catch (\Exception $e) {
+            self::assertSame($exception, $e->getPrevious());
+            /** @noinspection PhpUnhandledExceptionInspection */
+            throw $e;
+        }
     }
 }

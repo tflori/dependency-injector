@@ -17,6 +17,7 @@ class CallableFactory extends AbstractFactory
     /**
      * Build the product of this factory.
      *
+     * @param array $args
      * @return mixed
      */
     protected function build(...$args)

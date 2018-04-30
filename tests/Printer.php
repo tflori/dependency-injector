@@ -4,6 +4,7 @@ namespace DependencyInjector\Test;
 
 use PHPUnit\Framework\AssertionFailedError;
 use PHPUnit\Framework\Test;
+use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Warning;
 use PHPUnit\TextUI\ResultPrinter;
 
@@ -22,7 +23,7 @@ class Printer extends ResultPrinter
         'I' => "\e[33mI\e[0m", // yellow I
         'R' => "\e[33mR\e[0m", // yellow R
         'S' => "\e[36mS\e[0m", // cyan S
-        '.' => "\e[32m\xe2\x9c\x94\e[0m", // green checkmark
+        '.' => "\e[32m\xe2\x9c\x94\e[0m", // green check mark
     ];
     /**
      * Structure of the outputted test row.
@@ -51,7 +52,8 @@ class Printer extends ResultPrinter
      */
     public function addError(Test $test, \Exception $e, $time)
     {
-        $this->buildTestRow(get_class($test), $test->getName(), $time, 'fg-red');
+        $name = $test instanceof TestCase ? $test->getName() : '';
+        $this->buildTestRow(get_class($test), $name, $time, 'fg-red');
         parent::addError($test, $e, $time);
     }
     /**
@@ -59,7 +61,8 @@ class Printer extends ResultPrinter
      */
     public function addFailure(Test $test, AssertionFailedError $e, $time)
     {
-        $this->buildTestRow(get_class($test), $test->getName(), $time, 'fg-red');
+        $name = $test instanceof TestCase ? $test->getName() : '';
+        $this->buildTestRow(get_class($test), $name, $time, 'fg-red');
         parent::addFailure($test, $e, $time);
     }
     /**
@@ -67,7 +70,8 @@ class Printer extends ResultPrinter
      */
     public function addWarning(Test $test, Warning $e, $time)
     {
-        $this->buildTestRow(get_class($test), $test->getName(), $time, 'fg-yellow');
+        $name = $test instanceof TestCase ? $test->getName() : '';
+        $this->buildTestRow(get_class($test), $name, $time, 'fg-yellow');
         parent::addWarning($test, $e, $time);
     }
     /**
@@ -75,7 +79,8 @@ class Printer extends ResultPrinter
      */
     public function addIncompleteTest(Test $test, \Exception $e, $time)
     {
-        $this->buildTestRow(get_class($test), $test->getName(), $time, 'fg-yellow');
+        $name = $test instanceof TestCase ? $test->getName() : '';
+        $this->buildTestRow(get_class($test), $name, $time, 'fg-yellow');
         parent::addIncompleteTest($test, $e, $time);
     }
     /**
@@ -83,7 +88,8 @@ class Printer extends ResultPrinter
      */
     public function addRiskyTest(Test $test, \Exception $e, $time)
     {
-        $this->buildTestRow(get_class($test), $test->getName(), $time, 'fg-yellow');
+        $name = $test instanceof TestCase ? $test->getName() : '';
+        $this->buildTestRow(get_class($test), $name, $time, 'fg-yellow');
         parent::addRiskyTest($test, $e, $time);
     }
     /**
@@ -91,7 +97,8 @@ class Printer extends ResultPrinter
      */
     public function addSkippedTest(Test $test, \Exception $e, $time)
     {
-        $this->buildTestRow(get_class($test), $test->getName(), $time, 'fg-cyan');
+        $name = $test instanceof TestCase ? $test->getName() : '';
+        $this->buildTestRow(get_class($test), $name, $time, 'fg-cyan');
         parent::addSkippedTest($test, $e, $time);
     }
     /**
