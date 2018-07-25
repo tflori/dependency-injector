@@ -98,6 +98,23 @@ class Container implements ContainerInterface
     }
 
     /**
+     * Instantly create an object of $class
+     *
+     * @param string $class
+     * @param mixed  ...$args
+     * @return mixed
+     */
+    public function make(string $class, ...$args)
+    {
+        if ($this->has($class)) {
+            return $this->get($class, ...$args);
+        }
+
+        $this->add($class, $class);
+        return $this->get($class, ...$args);
+    }
+
+    /**
      * Returns the factory stored for this $name.
      *
      * This also searches for FactoryInterfaces in the registered namespaces.

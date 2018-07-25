@@ -64,6 +64,19 @@ class DI
     }
 
     /**
+     * Instantly create an object of $class
+     *
+     * @param string $class
+     * @param mixed  ...$args
+     * @return mixed
+     * @codeCoverageIgnore Just an alias for $container->make()
+     */
+    public static function make(string $class, ...$args)
+    {
+        return self::getContainer()->make($class, ...$args);
+    }
+
+    /**
      * Stores a dependency for $name using $getter.
      *
      * Returns the created factory or null when a value was given.

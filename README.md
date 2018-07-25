@@ -17,7 +17,7 @@ that implements `CacheInterface`.
 ## Basic Usage
 
 One of the biggest problems in software development is the tight coupling of dependencies. Imagine a class that creates
-a instance from `DatabaseConnection` with `new DatabaseConnection()`. This is called a tight coupling - it is so tight
+an instance from `DatabaseConnection` with `new DatabaseConnection()`. This is called a tight coupling - it is so tight
 that you would have to overwrite your autoloader (what is not always possible) to mock the database connection.
 
 There are two solutions to test this class without the need to have a database connection during the tests.
@@ -82,6 +82,25 @@ This works in both versions &ast;<sup>2</sup> and can safely be used for testing
 
 We can not only store callbacks that are executed when a new instance is required. There are some other practical ways
 that makes it easier for you to define how dependencies should be resolved.
+
+### Make An Object
+
+With version 2.1 comes the new method `DI::make(string $class, ...$args)` which allows you to directly get an instance
+of `$class` with `$args` as constructor arguments without defining a dependency for it.
+
+```php
+<?php
+$feed = DI::make(SomeFeed::class, $_GET['id']);
+// equals to  new SomeFeed($_GET['id']);
+``` 
+
+Even if the above examples are equal the method has a big advantage: you can provide a mock for the class.
+
+```php
+<?php
+DI::instance(SomeFeed::class, m::mock(SomeFeed::class));
+$feedMock = DI::make(SomeFeed::class, $_GET['id']);
+```
 
 ### Define Instances
 
@@ -176,7 +195,7 @@ $view = DI::get('view', 'login');
 new View('login');
 ```
 
-### Singleton Factory
+#### Singleton Factory
 
 The `SingletonFactory` is a special factory that just wraps the call to `::getInstance()`. The advantage here is that
 you don't have to create the instance if you don't need to or create a mock object for tests. Without this factory you
@@ -196,7 +215,7 @@ DI::get('calculator', 'deg');
 Calculator::getInstance('deg');
 ```
 
-### Callable Factory
+#### Callable Factory
 
 This factory is just calling the passed callback. The callback only have to be callable what is checked with 
 `is_callable($getter)` - so you can also pass an array with class or instance and method name.
@@ -364,7 +383,8 @@ class Container extends \DependencyInjector\Container {}
 
 ## Comments
 
-- **&ast;<sup>1</sup>** Some people say this is hiding the dependencies and is an anti pattern called `Service Locator`. Don't trust them. It's still clear what are the dependencies (you just have to search for them) and it could be easier
+- **&ast;<sup>1</sup>** Some people say this is hiding the dependencies and is an anti pattern called `Service Locator`.
+  Don't trust them. It's still clear what are the dependencies (you just have to search for them) and it could be easier
   to write. But the most crucial difference is that otherwise the instance gets created without a requirement. Assume
   you may need a `DatabaseConnection` only if the cache does not already store the result - such things can have a huge
   impact when we are talking about large amounts of users.
