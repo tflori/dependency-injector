@@ -10,11 +10,11 @@ class MakeTest extends MockeryTestCase
     /** @test */
     public function returnsDefinedInstance()
     {
-        $instance = new \SimpleXMLElement('<d/>');
+        $instance = new \DateTime('2018-01-01');
         $container = new Container();
-        $container->instance(\SimpleXMLElement::class, $instance);
+        $container->instance(\DateTime::class, $instance);
 
-        $result = $container->make(\SimpleXMLElement::class, '<f/>');
+        $result = $container->make(\DateTime::class);
 
         self::assertSame($instance, $result);
     }
@@ -24,8 +24,8 @@ class MakeTest extends MockeryTestCase
     {
         $container = new Container();
 
-        $result = $container->make(\SimpleXMLElement::class, '<f/>');
+        $result = $container->make(\DateTime::class, '2018-01-01');
 
-        self::assertEquals(new \SimpleXMLElement('<f/>'), $result);
+        self::assertEquals(new \DateTime('2018-01-01'), $result);
     }
 }
