@@ -17,6 +17,9 @@ class Container implements ContainerInterface
     /** @var FactoryInterface[] */
     protected $factories = [];
 
+    /** @var PatternFactoryInterface[] */
+    protected $patternFactories = [];
+
     public function __construct()
     {
         $this->instance('container', $this);
@@ -37,6 +40,9 @@ class Container implements ContainerInterface
     {
         $factory = $this->resolve($name);
         try {
+            if ($factory instanceof PatternFactoryInterface) {
+                return $factory->getInstance($name);
+            }
             /** @noinspection PhpMethodParametersCountMismatchInspection */
             // a concrete factory could use this arguments
             return $factory->getInstance(...$args);
@@ -141,6 +147,14 @@ class Container implements ContainerInterface
         }
 
         if (!isset($this->factories[$name])) {
+            foreach ($this->patternFactories as $factory) {
+                if ($factory->matches($name)) {
+                    return $factory;
+                }
+            }
+        }
+
+        if (!isset($this->factories[$name])) {
             throw new NotFoundException('Name ' . $name . ' could not be resolved');
         }
 
@@ -213,8 +227,18 @@ class Container implements ContainerInterface
             throw new Exception('$getter is invalid for dependency. Maybe you want to add an instance instead?');
         }
 
-        $this->factories[$name] = $factory;
+        if ($factory instanceof PatternFactoryInterface) {
+            $this->patternFactories[] = $factory;
+        } else {
+            $this->factories[$name] = $factory;
+        }
+
         return $factory;
+    }
+
+    public function addPatternFactory(PatternFactoryInterface $patternFactory)
+    {
+        $this->patternFactories[] = $patternFactory;
     }
 
     /**
