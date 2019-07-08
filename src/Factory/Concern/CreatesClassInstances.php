@@ -49,14 +49,15 @@ trait CreatesClassInstances
     /**
      * Build the product of this factory.
      *
-     * @param array $additionalArgs
+     * @noinspection PhpDocSignatureInspection
+     * @param mixed $additionalArgs...
      * @return mixed
      */
-    protected function build(...$additionalArgs)
+    protected function build()
     {
         $args = array_map([$this, 'resolveArg'], $this->arguments);
 
-        $instance = new $this->class(...$args, ...$additionalArgs);
+        $instance = new $this->class(...$args, ...func_get_args());
 
         foreach ($this->methodCalls as $methodCall) {
             call_user_func_array([$instance, $methodCall[0]], array_map([$this, 'resolveArg'], $methodCall[1]));
