@@ -1,6 +1,6 @@
 # Dependency Injector
 
-[![build status](https://gitlab.w00tserver.org/tflori/dependency-injector/badges/master/build.svg)](https://gitlab.w00tserver.org/tflori/dependency-injector/commits/master)
+[![Build Status](https://travis-ci.org/tflori/dependency-injector.svg?branch=master)](https://travis-ci.org/tflori/dependency-injector)
 [![Coverage Status](https://coveralls.io/repos/github/tflori/dependency-injector/badge.svg?branch=master)](https://coveralls.io/github/tflori/dependency-injector?branch=master)
 [![Latest Stable Version](https://poser.pugx.org/tflori/dependency-injector/v/stable)](https://packagist.org/packages/tflori/dependency-injector)
 [![Total Downloads](https://poser.pugx.org/tflori/dependency-injector/downloads)](https://packagist.org/packages/tflori/dependency-injector)
