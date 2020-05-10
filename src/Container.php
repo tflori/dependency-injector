@@ -41,7 +41,7 @@ class Container implements ContainerInterface
         $factory = $this->resolve($name);
         try {
             if ($factory instanceof PatternFactoryInterface) {
-                return $factory->getInstance($name);
+                return $factory->getInstance($name, ...$args);
             }
             /** @noinspection PhpMethodParametersCountMismatchInspection */
             // a concrete factory could use this arguments

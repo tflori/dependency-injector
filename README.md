@@ -195,6 +195,44 @@ $view = DI::get('view', 'login');
 new View('login');
 ```
 
+#### Pattern Factory
+
+A `PatternFactory` is a factory that can be used for different names. Keep in mind that when ever a dependency is
+requested and no other factory is defined for this dependency all pattern factories are requested to match against the
+requested name.
+
+##### Namespace Factory
+
+An example for a `PatternFactory` is the `NamespaceFactory`. The namespace factory can be used to load all classes of a
+previously defined namespace with this factory. Similar to the class factory it supports passing arguments and method
+calls after the request.
+
+This example shows a factory definition for Controller classes:
+
+```php
+<?php
+use App\Http\Controller;
+use DependencyInjector\Factory\NamespaceFactory;
+use DependencyInjector\DI;
+
+$request = (object)$_SERVER;
+DI::add(Controller::class, (new NamespaceFactory(DI::getContainer(), Controller::class))
+    ->addArguments(DI::getContainer()));
+DI::get(Controller\UserController::class, $request);
+
+// equals to
+new Controller\UserController(DI::getContainer(), $request);
+```
+
+A shared namespace factory stores the instance per class:
+
+```php
+<?php
+DI::share('ViewHelper', (new NamespaceFactory(DI::getContainer(), App\View\Helper::class))
+    ->addArguments(DI::getContainer()));
+DI::get(App\View\Helper\Url::class);
+```
+
 #### Singleton Factory
 
 The `SingletonFactory` is a special factory that just wraps the call to `::getInstance()`. The advantage here is that
