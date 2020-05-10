@@ -33,6 +33,8 @@ class NamespaceFactory extends AbstractFactory implements PatternFactoryInterfac
 
     public function getInstance($name = null, ...$args)
     {
+        $this->class = $name;
+
         if ($this->isShared()) {
             if (!isset($this->instances[$name])) {
                 $this->instances[$name] = $this->build();
@@ -41,7 +43,6 @@ class NamespaceFactory extends AbstractFactory implements PatternFactoryInterfac
             return $this->instances[$name];
         }
 
-        $this->class = $name;
         return $this->build(...$args);
     }
 }
