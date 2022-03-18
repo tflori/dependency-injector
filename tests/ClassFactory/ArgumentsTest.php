@@ -11,12 +11,12 @@ use Mockery as m;
 use Mockery\Adapter\Phpunit\MockeryTestCase;
 use Mockery\Mock;
 
-class BasicTest extends MockeryTestCase
+class ArgumentsTest extends MockeryTestCase
 {
     /** @var Container|Mock */
     protected $container;
     
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->container = m::mock(Container::class);
     }

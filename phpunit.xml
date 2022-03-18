@@ -10,7 +10,7 @@
          processIsolation="false"
          stopOnFailure="false"
          syntaxCheck="true"
-         printerClass="\DependencyInjector\Test\Printer">
+         printerClass="PhpUnitPrinter\TextPrinter">
     <testsuite name="tests">
         <directory>./tests/</directory>
     </testsuite>
