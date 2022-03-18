@@ -12,12 +12,12 @@ class ContainerTest extends MockeryTestCase
     /** @var Container|m\Mock */
     protected $container;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->container = m::mock(Container::class);
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         DI::reset();
     }

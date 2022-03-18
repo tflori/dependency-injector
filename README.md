@@ -1,7 +1,8 @@
 # Dependency Injector
 
-[![Build Status](https://travis-ci.org/tflori/dependency-injector.svg?branch=master)](https://travis-ci.org/tflori/dependency-injector)
-[![Coverage Status](https://coveralls.io/repos/github/tflori/dependency-injector/badge.svg?branch=master)](https://coveralls.io/github/tflori/dependency-injector?branch=master)
+[![.github/workflows/push.yml](https://github.com/tflori/dependency-injector/actions/workflows/push.yml/badge.svg)](https://github.com/tflori/dependency-injector/actions/workflows/push.yml)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/3819dec3a234a6d206eb/test_coverage)](https://codeclimate.com/github/tflori/dependency-injector/test_coverage)
+[![Maintainability](https://api.codeclimate.com/v1/badges/3819dec3a234a6d206eb/maintainability)](https://codeclimate.com/github/tflori/dependency-injector/maintainability)
 [![Latest Stable Version](https://poser.pugx.org/tflori/dependency-injector/v/stable)](https://packagist.org/packages/tflori/dependency-injector)
 [![Total Downloads](https://poser.pugx.org/tflori/dependency-injector/downloads)](https://packagist.org/packages/tflori/dependency-injector)
 [![License](https://poser.pugx.org/tflori/dependency-injector/license)](https://packagist.org/packages/tflori/dependency-injector)

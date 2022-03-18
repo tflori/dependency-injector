@@ -16,7 +16,7 @@ class MethodCallTest extends MockeryTestCase
     /** @var Container|Mock */
     protected $container;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->container = m::mock(Container::class);
     }
