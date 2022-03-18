@@ -24,13 +24,14 @@
     "coverage": "phpunit --coverage-text"
   },
   "require": {
-    "php": "^7.0",
+    "php": "^7.0 || ^8.0",
     "psr/container": "^1.0"
   },
   "require-dev": {
-    "phpunit/phpunit": "^6.0",
-    "mockery/mockery": "^1.0",
-    "squizlabs/php_codesniffer": "^3.2"
+    "phpunit/phpunit": "*",
+    "tflori/phpunit-printer": "*",
+    "mockery/mockery": "^1.1",
+    "squizlabs/php_codesniffer": "^3.5"
   },
   "autoload": {
     "psr-4": {
