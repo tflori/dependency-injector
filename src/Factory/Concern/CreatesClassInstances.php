@@ -27,7 +27,7 @@ trait CreatesClassInstances
      * @param mixed ...$args
      * @return $this
      */
-    public function addArguments(...$args)
+    public function addArguments(...$args): self
     {
         array_push($this->arguments, ...$args);
         return $this;
@@ -40,9 +40,9 @@ trait CreatesClassInstances
      * @param mixed ...$args
      * @return $this
      */
-    public function addMethodCall(string $method, ...$args)
+    public function addMethodCall(string $method, ...$args): self
     {
-        array_push($this->methodCalls, [$method, $args]);
+        $this->methodCalls[] = [$method, $args];
         return $this;
     }
 

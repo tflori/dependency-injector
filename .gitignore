@@ -2,3 +2,4 @@
 /coverage/
 /.phpunit.result.cache
 composer.lock
+/graphify-out/

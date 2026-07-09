@@ -9,7 +9,7 @@ class ClassFactory extends AbstractFactory
 {
     use CreatesClassInstances;
 
-    public function __construct(ContainerInterface $container, string $class = null)
+    public function __construct(ContainerInterface $container, ?string $class = null)
     {
         parent::__construct($container);
         $this->class = $class;

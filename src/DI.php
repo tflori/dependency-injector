@@ -42,7 +42,7 @@ class DI
      * @return mixed
      * @codeCoverageIgnore Just an alias for get
      */
-    public static function __callStatic($name, $args)
+    public static function __callStatic(string $name, array $args)
     {
         return self::getContainer()->get($name, ...$args);
     }
@@ -209,7 +209,7 @@ class DI
      *
      * @return Container The created Container
      */
-    public static function reset()
+    public static function reset(): Container
     {
         return self::$container = new Container();
     }

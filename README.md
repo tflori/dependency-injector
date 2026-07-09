@@ -1,8 +1,8 @@
 # Dependency Injector
 
 [![.github/workflows/push.yml](https://github.com/tflori/dependency-injector/actions/workflows/push.yml/badge.svg)](https://github.com/tflori/dependency-injector/actions/workflows/push.yml)
-[![Test Coverage](https://api.codeclimate.com/v1/badges/3819dec3a234a6d206eb/test_coverage)](https://codeclimate.com/github/tflori/dependency-injector/test_coverage)
-[![Maintainability](https://api.codeclimate.com/v1/badges/3819dec3a234a6d206eb/maintainability)](https://codeclimate.com/github/tflori/dependency-injector/maintainability)
+[![Code Coverage](https://qlty.sh/gh/tflori/projects/dependency-injector/coverage.svg)](https://qlty.sh/gh/tflori/projects/dependency-injector)
+[![Maintainability](https://qlty.sh/gh/tflori/projects/dependency-injector/maintainability.svg)](https://qlty.sh/gh/tflori/projects/dependency-injector)
 [![Latest Stable Version](https://poser.pugx.org/tflori/dependency-injector/v/stable)](https://packagist.org/packages/tflori/dependency-injector)
 [![Total Downloads](https://poser.pugx.org/tflori/dependency-injector/downloads)](https://packagist.org/packages/tflori/dependency-injector)
 [![License](https://poser.pugx.org/tflori/dependency-injector/license)](https://packagist.org/packages/tflori/dependency-injector)
@@ -346,7 +346,7 @@ function someStaticFunction() {
 
 ```php
 <?php
-DI::set('database', function() {
+DI::share('database', function() {
     $dbConfig = DI::get('config')->database;
     
     $mysql = new mysqli($dbConfig['host'], $dbConfig['user'], $dbConfig['password'], $dbConfig['database']);

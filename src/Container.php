@@ -36,14 +36,13 @@ class Container implements ContainerInterface
      *
      * @return mixed Entry.
      */
-    public function get($name, ...$args)
+    public function get(string $name, ...$args)
     {
         $factory = $this->resolve($name);
         try {
             if ($factory instanceof PatternFactoryInterface) {
                 return $factory->getInstance($name, ...$args);
             }
-            /** @noinspection PhpMethodParametersCountMismatchInspection */
             // a concrete factory could use this arguments
             return $factory->getInstance(...$args);
         } catch (\Throwable $t) {
@@ -56,7 +55,7 @@ class Container implements ContainerInterface
      * @return mixed
      * @codeCoverageIgnore Just an alias for get
      */
-    public function __get($name)
+    public function __get(string $name)
     {
         return $this->get($name);
     }
@@ -67,7 +66,7 @@ class Container implements ContainerInterface
      * @return mixed
      * @codeCoverageIgnore Just an alias for get
      */
-    public function __call($name, $args)
+    public function __call(string $name, array $args)
     {
         return $this->get($name, ...$args);
     }
@@ -83,7 +82,7 @@ class Container implements ContainerInterface
      *
      * @return bool
      */
-    public function has($name)
+    public function has(string $name): bool
     {
         try {
             $this->resolve($name);
@@ -94,11 +93,9 @@ class Container implements ContainerInterface
     }
 
     /**
-     * @param string $name
-     * @return bool
      * @codeCoverageIgnore Just an alias for has
      */
-    public function __isset($name)
+    public function __isset(string $name):  bool
     {
         return $this->has($name);
     }
