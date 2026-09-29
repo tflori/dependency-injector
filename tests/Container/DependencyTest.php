@@ -121,6 +121,20 @@ class DependencyTest extends MockeryTestCase
     }
 
     /** @test */
+    public function throwsWhenFactoryRequiresMoreThanTheContainer()
+    {
+        $container = new Container();
+
+        self::expectException(Exception::class);
+        self::expectExceptionMessage(
+            'Factory ' . ClassFactory::class . ' can not be created by the container: its constructor requires 2 ' .
+            'arguments but only the container can be passed. Pass an instance of the factory instead.'
+        );
+
+        $container->add('service', ClassFactory::class);
+    }
+
+    /** @test */
     public function overwritesExistingAlias()
     {
         $container = new Container();

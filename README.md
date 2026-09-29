@@ -295,6 +295,10 @@ can also register the namespace where your factories are defined and the contain
 the requested dependency. When you request a dependency and it is not already defined it will check each registered
 namespace for a class named `$namespace . '\\' . ucfirst($dependency) . $suffix`.  
 
+When the container creates a factory from its class name (`Container::add()` with a class name or a registered
+namespace) it passes the container as the only argument. Factories that require further constructor arguments have
+to be created by yourself and passed as instance - otherwise a `DependencyInjector\Exception` is thrown.
+
 ## Examples
 
 Here are some small examples how you could use this library.

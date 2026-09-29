@@ -19,7 +19,7 @@ class NamespaceFactory extends AbstractFactory implements PatternFactoryInterfac
     /** @var array */
     protected $instances = [];
 
-    public function __construct(ContainerInterface $container, ?string $namespace = null)
+    public function __construct(ContainerInterface $container, string $namespace)
     {
         $this->namespace = $namespace;
         parent::__construct($container);

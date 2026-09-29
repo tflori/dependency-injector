@@ -13,12 +13,12 @@ class Alias implements FactoryInterface
     protected $container;
 
     /**
-     * FactoryInterface constructor.
+     * Alias constructor.
      *
      * @param ContainerInterface $container
-     * @param ?string            $origin
+     * @param string             $origin
      */
-    public function __construct(ContainerInterface $container, ?string $origin = null)
+    public function __construct(ContainerInterface $container, string $origin)
     {
         $this->container = $container;
         $this->origin = $origin;

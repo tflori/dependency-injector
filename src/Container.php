@@ -133,10 +133,10 @@ class Container implements ContainerInterface
                 $class = sprintf($namespace, ucfirst($name));
                 if (class_exists($class)) {
                     /** @noinspection PhpUnhandledExceptionInspection */
-                    // it will not throw class does not exists - we checked that before
+                    // it will not throw class does not exist - we checked that before
                     $reflection = new \ReflectionClass($class);
                     if ($reflection->implementsInterface(FactoryInterface::class)) {
-                        $this->factories[$name] = new $class($this);
+                        $this->factories[$name] = $this->createFactory($reflection);
                         break;
                     }
                 }
@@ -204,10 +204,10 @@ class Container implements ContainerInterface
             $factory = $getter;
         } elseif (is_string($getter) && class_exists($getter)) {
             /** @noinspection PhpUnhandledExceptionInspection */
-            // it will not throw class does not exists - we checked that before
+            // it will not throw class does not exist - we checked that before
             $reflection = new \ReflectionClass($getter);
             if ($reflection->implementsInterface(FactoryInterface::class)) {
-                $factory = new $getter($this);
+                $factory = $this->createFactory($reflection);
             } elseif ($reflection->getConstructor() &&
                       $reflection->getConstructor()->isPrivate() &&
                       is_callable([$getter, 'getInstance'])
@@ -233,6 +233,28 @@ class Container implements ContainerInterface
         return $factory;
     }
 
+    /**
+     * Create a factory from its class name by passing the container as the only argument
+     *
+     * @param \ReflectionClass $reflection
+     * @return FactoryInterface
+     * @throws Exception When the constructor requires more than the container
+     */
+    private function createFactory(\ReflectionClass $reflection): FactoryInterface
+    {
+        $constructor = $reflection->getConstructor();
+        if ($constructor && $constructor->getNumberOfRequiredParameters() > 1) {
+            throw new Exception(sprintf(
+                'Factory %s can not be created by the container: its constructor requires %d arguments ' .
+                'but only the container can be passed. Pass an instance of the factory instead.',
+                $reflection->getName(),
+                $constructor->getNumberOfRequiredParameters()
+            ));
+        }
+
+        return $reflection->newInstance($this);
+    }
+
     public function addPatternFactory(PatternFactoryInterface $patternFactory)
     {
         $this->patternFactories[] = $patternFactory;
@@ -255,7 +277,7 @@ class Container implements ContainerInterface
             $factory = $this->resolve($name);
             if (!$factory instanceof Alias) {
                 /** @noinspection PhpUnhandledExceptionInspection */
-                // it will not throw class does not exists - we already have an object
+                // it will not throw class does not exist - we already have an object
                 $reflection = new \ReflectionClass($factory);
                 throw new Exception(sprintf('%s for %s already exists', ($reflection)->getShortName(), $name));
             }

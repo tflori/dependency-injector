@@ -3,6 +3,8 @@
 namespace DependencyInjector\Test\Container;
 
 use DependencyInjector\Container;
+use DependencyInjector\Exception;
+use DependencyInjector\Factory\ClassFactory;
 use Mockery\Adapter\Phpunit\MockeryTestCase;
 use DependencyInjector\Test\Examples;
 
@@ -83,5 +85,18 @@ class NamespaceTest extends MockeryTestCase
         $container->registerNamespace(Examples\NS1::class);
 
         self::assertInstanceOf(\SimpleXMLElement::class, $container->get('faker'));
+    }
+
+    /** @test */
+    public function throwsWhenFactoryRequiresMoreThanTheContainer()
+    {
+        $container = new Container();
+
+        $container->registerNamespace('DependencyInjector\\Factory', 'Factory');
+
+        self::expectException(Exception::class);
+        self::expectExceptionMessage('Factory ' . ClassFactory::class . ' can not be created by the container');
+
+        $container->get('class');
     }
 }

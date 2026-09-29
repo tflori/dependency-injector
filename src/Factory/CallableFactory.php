@@ -8,7 +8,7 @@ class CallableFactory extends AbstractFactory
 {
     protected $callable;
 
-    public function __construct(ContainerInterface $container, callable $callable = null)
+    public function __construct(ContainerInterface $container, callable $callable)
     {
         parent::__construct($container);
         $this->callable = $callable;
